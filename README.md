@@ -1,144 +1,105 @@
-# AI-Powered Dynamic Interview Assistant with Candidate Profiling & Scoring
+# ATS Challenge — “Watch the ATS Think”
 
-## Objective
+*A mini coding exercise that shows off front‑end polish, back‑end logic, and a transparent agent loop.*
 
-Develop a **Next.js** web application that enables recruiters to upload both a job description and a candidate’s CV. The system will then generate personalized interview questions using an AI API, conduct a one-shot, dynamic multi-turn interview via a chat interface, and finally produce a performance evaluation that includes scoring based on answer quality and the time taken to respond.
+## 1 · Scenario
 
----
+You ship a tiny **Next.js** site that:
 
-## Core Tasks
+1. **Pre‑loads a CSV** — `candidates.csv` (≈ 50 dummy rows)
 
-### 1. Dual Data Input
+   ```csv
+   id,full_name,title,location,years_experience,skills,availability_weeks,willing_to_relocate,etc.
+   ```
 
-#### A. Job Description Input
-- **Input Form**:  
-  - Create a responsive form where recruiters can enter or select a detailed job description.
-  - Validate input to ensure sufficient detail (e.g., minimum character count).
+2. Displays a **chat box** for recruiters to type natural‑language queries such as:
 
-#### B. Candidate CV Upload
-- **CV Upload Interface**:  
-  - Allow users to upload a candidate’s CV (supporting PDF, DOCX, or plain text).
-  - Optionally, perform basic parsing or use the AI API to extract key candidate details.
+   > Backend engineers in Germany, most experience first.
 
----
+3. Runs an explicit **MCP loop** (Think → Act → Act → Speak) to
 
-### 2. AI-Driven Question Generation
+   * **filter** the dataset
+   * **rank** the subset
+   * **stream every step** to the UI with smooth animations
 
-- **Data Fusion for Question Generation**:  
-  - Use an AI API (e.g., OpenAI) to process both the job description and the candidate’s CV.
-  - **Prompt Design**: Craft prompts to ensure the AI considers both data sources to generate a tailored set of interview questions.
-  - **Output**: Generate a set of questions that are contextually relevant to the role and the candidate’s background, optionally categorizing them (e.g., technical, behavioral, situational).
+The assistant is nick‑named **ATS‑Lite**.
 
----
+## 2 · Required Tools (pure JavaScript)
 
-### 3. One-Shot Dynamic Interview Chat Interface
+| Tool                        | Signature                                         | Purpose                            |
+| --------------------------- | ------------------------------------------------- | ---------------------------------- |
+| `filterCandidates(plan)`    | `{ include?, exclude? } → Candidate[]`            | Boolean / regex / ≥ filtering      |
+| `rankCandidates(ids, plan)` | `{ primary, tie_breakers? } → Candidate[]`        | Scores & sorts the filtered subset |
+| `aggregateStats(ids)`[^1]   | `ids[] → { count, avg_experience, top_skills[] }` | Quick stats for richer replies     |
 
-- **Chat Window Setup**:  
-  - Develop a streamlined chat interface where the candidate answers the AI-generated questions in a continuous, uninterrupted session.
-  - Clearly display the AI interviewer’s questions and capture candidate responses in real time.
+All tools are *synchronous* – no DB or external I/O.
 
-- **Multi-Turn, Context-Aware Conversation**:  
-  - **Continuous Flow**: The conversation proceeds in one shot without options to pause, review, or restart.
-  - **Adaptive Follow-Up**: The AI interviewer should ask follow-up questions or request clarifications based on the candidate’s answers.
-  - **Timing Metrics**: Automatically record the time taken by the candidate to answer each question. This data should be collected seamlessly as part of the interview flow.
+[^1]: Optional, but helpful for richer assistant summaries.
 
----
+## 3 · MCP Workflow
 
-### 4. Interview Scoring & Analysis
+1. **THINK** – The LLM receives the user message **plus** the CSV header row and replies *only* with JSON:
 
-- **Scoring Trigger**:  
-  - Once the interview concludes, automatically trigger the scoring process based on the entire transcript and timing metrics.
+   ```json
+   {
+     "filter": { /* FilterPlan */ },
+     "rank":   { /* RankingPlan */ }
+   }
+   ```
 
-- **AI-Powered Analysis**:  
-  - Use the complete conversation transcript, the original job description, the candidate’s CV, and the recorded response times to generate a detailed performance evaluation.
+2. **ACT 1** – Front‑end calls `filterCandidates(filterPlan)`
 
-- **Scoring Criteria** (for example):
-  - **Technical Acumen**: Evaluation of the candidate’s technical skills as evidenced in their responses.
-  - **Communication Skills**: Clarity, coherence, and effectiveness in conveying ideas.
-  - **Responsiveness & Agility**: Assess how promptly and thoughtfully the candidate responds. Faster, well-considered responses could be scored higher.
-  - **Problem-Solving & Adaptability**: Ability to handle follow-up questions and provide relevant clarifications.
-  - **Cultural Fit & Soft Skills**: Evaluation of interpersonal communication and potential fit for the company culture.
+3. **ACT 2** – Front‑end calls `rankCandidates(ids, rankingPlan)`
 
-- **Score Breakdown**:  
-  - Present numerical values or percentages for each category, including a specific metric for response timing.
-  - Provide an overall composite score and a brief summary of the candidate’s strengths and areas for improvement.
+4. **SPEAK** – Front‑end calls the LLM again, passing the **top 5 rows** to generate a recruiter‑friendly summary
 
-- **Prompt Engineering**:  
-  - Clearly document how the AI is instructed to evaluate both the content and the timing of responses.
+Each phase emits an event that surfaces live in the UI.
 
----
+## 4 · UI & Animation Requirements
 
-### 5. Technical Requirements
+| Area                 | Must‑have                                                                                                                           | Library ideas                     |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| **Chat panel**       | Stream assistant tokens as they arrive                                                                                              | Tailwind, `react-virtual`         |
+| **Timeline sidebar** | Collapsible panel that reveals, one line at a time: 1️⃣ filter plan JSON → 2️⃣ match count → 3️⃣ ranking plan JSON → 4️⃣ ranked IDs | `framer-motion` (stagger / slide) |
+| **Result table**     | Always shows the **current ranked subset**; when rows change or reorder, they **animate** into place                                | `framer-motion` layout / FLIP     |
+| Loading cues         | Progress bar or shimmer while the agent works                                                                                       | `nprogress` or custom             |
+| Row details          | Click a row → side panel with full candidate JSON                                                                                   | —                                 |
 
-- **Framework & UI**:  
-  - Use Next.js (preferably with the App Router).
-  - While UI libraries (e.g., shadcn/ui) may be utilized, the interactive chat interface should be custom-designed to avoid overly template-driven solutions.
+## 5 · Example Flow
 
-- **AI API Integration**:  
-  - Leverage the provided AI API key for both question generation and final scoring.
-  - Implement robust error handling and asynchronous interactions for API calls.
+```text
+You: Backend engineers in Germany, most experience first.
 
-- **Deployment & Testing**:  
-  - Deploy the application on **Vercel** and provide a live URL.
-  - Include unit tests covering:
-    - Form validation for job description and CV upload.
-    - AI-driven question generation.
-    - The uninterrupted, one-shot chat interface.
-    - Timing data capture and scoring algorithm.
-  - Provide detailed setup instructions and testing documentation.
+Timeline ▶
+1️⃣ filter plan ready
+2️⃣ 7 rows matched
+3️⃣ ranking plan ready
+4️⃣ ranked IDs [14, 5, 22, …]   ← lines fade‑in one by one
 
----
+Result table slides into new order.
 
-## Submission Guidelines
+ATS‑Lite: I found 7 matches (avg 6.1 yrs). Here are the top three…
+```
 
-1. **Repository & Code Organization**
-   - Organize your project with a clear and maintainable directory structure.
-   - Include a detailed README with setup instructions, deployment details, and test running guidelines.
-   - Attach a document describing your prompt design strategy and how both data sources and timing metrics are integrated into the AI evaluation.
+## 6 · Deliverables
 
-2. **Documentation**
-   - Explain your approach to parsing the job description and candidate CV.
-   - Describe how the AI prompts are engineered to combine both inputs for generating context-aware questions.
-   - Detail the scoring criteria, including how timing metrics influence the candidate evaluation.
+* **Git repo** with clean commits & a clear `README.md` (`pnpm install && pnpm dev`)
+* **`.env.example`** for the OpenAI key
+* **One Jest test**
+  *Input:* *React dev, Cyprus, sort by experience desc*
+  *Expectation:* candidate **#12** appears above **#5**
+* **Links** — provide both (a) the GitHub repository URL and (b) a live deployment link (e.g., Vercel, Netlify)
 
-3. **Deployment**
-   - Ensure the application is deployed on Vercel.
-   - Verify that the full flow is functional: job description/CV input → tailored question generation → uninterrupted dynamic chat interview → AI-powered scoring with timing metrics.
+## 7 · Evaluation Criteria
+
+* **Agent transparency** – each MCP phase surfaced in order
+* **Prompt robustness** – LLM reliably emits valid JSON; graceful retry on errors
+* **Animation & UX** – timeline staggers, rows re‑flow without jank; keyboard shortcut (⌘ + Enter) to send
+* **Code quality** – modular data helpers, tidy state (Context/Zustand), minimal globals
+* **Docs & tests** – quick start, clear tool contracts, meaningful test coverage
 
 ---
 
-## Evaluation Criteria
+### Keep It Small 📎
 
-1. **Functionality & Usability**
-   - Does the application handle dual inputs (job description and CV) and generate relevant interview questions?
-   - Is the chat interface streamlined and intuitive for a one-shot interview session?
-   - Is the timing of candidate responses accurately captured and integrated into the scoring?
-
-2. **AI Integration & Dynamic Flow**
-   - How effectively does the AI API leverage both inputs to generate and adapt interview questions?
-   - Does the one-shot interview process work smoothly without manual intervention?
-   - Is the follow-up questioning appropriately adaptive to candidate responses?
-
-3. **Scoring & Analysis**
-   - Is the candidate’s performance evaluated on multiple dimensions, including response timing?
-   - Is the score breakdown clear, detailed, and reflective of the candidate’s performance?
-   - Are the AI prompts for scoring well-documented and effective?
-
-4. **Code Quality & Documentation**
-   - Is the code modular, clean, and well-documented?
-   - Are unit tests provided for key functionalities?
-   - Is the setup and usage documentation clear and comprehensive?
-
-5. **Deployment & Innovation**
-   - Is the application live on Vercel and fully functional?
-   - Has the candidate introduced innovative touches, particularly regarding the integration of timing metrics into the scoring process?
-
----
-
-## Final Notes
-
-- **Creativity is Encouraged**: Consider any additional features that enhance the recruitment process, such as nuanced timing-based insights or a refined scoring algorithm.
-- **Clarify Assumptions**: Clearly document any assumptions made during development, particularly regarding the weight of response times in scoring.
-- **Time Management**: The challenge is designed to be completed within 5 days, so prioritize delivering a robust core experience with strong AI integration and clear scoring mechanisms.
-
-Good luck, and we look forward to seeing your innovative approach to an AI-driven, dynamic interview and evaluation system!
+No auth, no uploads, no database — just a CSV in memory, two synchronous tools, two LLM calls, and a polished UI that lets reviewers **watch the ATS think** in real time.
