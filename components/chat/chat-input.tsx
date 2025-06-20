@@ -1,5 +1,6 @@
 'use client'
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { SendIcon } from 'lucide-react'
 import React, { useState } from 'react'
@@ -14,7 +15,7 @@ export default function ChatInput() {
   return (
     <div className="flex items-center space-x-4">
       <div className="flex-1">
-        <div className="bg-gray-50 rounded-xl border border-gray-200 w-full p-4">
+        <div className="bg-background rounded-xl border border-border w-full p-4">
           <div className="flex items-center justify-between h-full">
             <AutosizeTextarea
               value={message}
@@ -22,8 +23,8 @@ export default function ChatInput() {
               minHeight={20}
               onChange={e => setMessage(e.target.value)}
               maxHeight={300}
-              placeholder="Ask whatever you want..."
-              className="w-full bg-transparent border-none outline-none resize-none text-gray-700 placeholder-gray-500 h-full"
+              placeholder="🪄 Ask ATSLite whatever you want..."
+              className="w-full bg-transparent border-none outline-none resize-none text-foreground placeholder-muted-foreground h-full"
             />
           </div>
 
@@ -33,13 +34,9 @@ export default function ChatInput() {
                 {message.length}/1000
               </span>
             </div>
-            <button
-              onClick={handleSend}
-              disabled={message.length === 0}
-              className="bg-gray-50 rounded-xl border border-gray-200 p-2 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <SendIcon className="w-4 h-4 text-gray-500" />
-            </button>
+            <Button size="icon" onClick={handleSend} disabled={message.length === 0} className="gap-2">
+              <SendIcon className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </div>

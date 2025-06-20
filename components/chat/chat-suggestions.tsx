@@ -8,14 +8,14 @@ export default function ChatSuggestions() {
       {SUGGESTIONS.map(suggestion => (
         <div
           key={suggestion.title}
-          className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
+          className="bg-background rounded-xl p-4 shadow-sm border border-border cursor-pointer hover:shadow-md transition-shadow"
         >
           <div className="flex items-center mb-4">
-            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-              <suggestion.icon className="w-4 h-4 text-gray-600" />
+            <div className="w-8 h-8 bg-muted rounded-xl flex items-center justify-center mr-3">
+              <suggestion.icon className="w-4 h-4 text-muted-foreground" />
             </div>
           </div>
-          <p className="text-sm text-gray-700 font-medium">{suggestion.title}</p>
+          <p className="text-sm text-foreground font-medium">{suggestion.title}</p>
         </div>
       ))}
     </div>
