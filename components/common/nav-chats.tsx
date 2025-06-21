@@ -18,7 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { useChatStore } from '@/lib/store'
+import { useChatStore } from '@/store/useChatStore'
 import { cn } from '@/lib/utils'
 
 export function NavChats() {

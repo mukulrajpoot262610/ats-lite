@@ -1,6 +1,6 @@
 # ATS Challenge — “Watch the ATS Think”
 
-*A mini coding exercise that shows off front‑end polish, back‑end logic, and a transparent agent loop.*
+_A mini coding exercise that shows off front‑end polish, back‑end logic, and a transparent agent loop._
 
 ## 1 · Scenario
 
@@ -18,9 +18,9 @@ You ship a tiny **Next.js** site that:
 
 3. Runs an explicit **MCP loop** (Think → Act → Act → Speak) to
 
-   * **filter** the dataset
-   * **rank** the subset
-   * **stream every step** to the UI with smooth animations
+   - **filter** the dataset
+   - **rank** the subset
+   - **stream every step** to the UI with smooth animations
 
 The assistant is nick‑named **ATS‑Lite**.
 
@@ -32,18 +32,22 @@ The assistant is nick‑named **ATS‑Lite**.
 | `rankCandidates(ids, plan)` | `{ primary, tie_breakers? } → Candidate[]`        | Scores & sorts the filtered subset |
 | `aggregateStats(ids)`[^1]   | `ids[] → { count, avg_experience, top_skills[] }` | Quick stats for richer replies     |
 
-All tools are *synchronous* – no DB or external I/O.
+All tools are _synchronous_ – no DB or external I/O.
 
 [^1]: Optional, but helpful for richer assistant summaries.
 
 ## 3 · MCP Workflow
 
-1. **THINK** – The LLM receives the user message **plus** the CSV header row and replies *only* with JSON:
+1. **THINK** – The LLM receives the user message **plus** the CSV header row and replies _only_ with JSON:
 
    ```json
    {
-     "filter": { /* FilterPlan */ },
-     "rank":   { /* RankingPlan */ }
+     "filter": {
+       /* FilterPlan */
+     },
+     "rank": {
+       /* RankingPlan */
+     }
    }
    ```
 
@@ -57,13 +61,13 @@ Each phase emits an event that surfaces live in the UI.
 
 ## 4 · UI & Animation Requirements
 
-| Area                 | Must‑have                                                                                                                           | Library ideas                     |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| **Chat panel**       | Stream assistant tokens as they arrive                                                                                              | Tailwind, `react-virtual`         |
+| Area                 | Must‑have                                                                                                                       | Library ideas                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| **Chat panel**       | Stream assistant tokens as they arrive                                                                                          | Tailwind, `react-virtual`         |
 | **Timeline sidebar** | Collapsible panel that reveals, one line at a time: 1️⃣ filter plan JSON → 2️⃣ match count → 3️⃣ ranking plan JSON → 4️⃣ ranked IDs | `framer-motion` (stagger / slide) |
-| **Result table**     | Always shows the **current ranked subset**; when rows change or reorder, they **animate** into place                                | `framer-motion` layout / FLIP     |
-| Loading cues         | Progress bar or shimmer while the agent works                                                                                       | `nprogress` or custom             |
-| Row details          | Click a row → side panel with full candidate JSON                                                                                   | —                                 |
+| **Result table**     | Always shows the **current ranked subset**; when rows change or reorder, they **animate** into place                            | `framer-motion` layout / FLIP     |
+| Loading cues         | Progress bar or shimmer while the agent works                                                                                   | `nprogress` or custom             |
+| Row details          | Click a row → side panel with full candidate JSON                                                                               | —                                 |
 
 ## 5 · Example Flow
 
@@ -83,20 +87,20 @@ ATS‑Lite: I found 7 matches (avg 6.1 yrs). Here are the top three…
 
 ## 6 · Deliverables
 
-* **Git repo** with clean commits & a clear `README.md` (`pnpm install && pnpm dev`)
-* **`.env.example`** for the OpenAI key
-* **One Jest test**
-  *Input:* *React dev, Cyprus, sort by experience desc*
-  *Expectation:* candidate **#12** appears above **#5**
-* **Links** — provide both (a) the GitHub repository URL and (b) a live deployment link (e.g., Vercel, Netlify)
+- **Git repo** with clean commits & a clear `README.md` (`pnpm install && pnpm dev`)
+- **`.env.example`** for the OpenAI key
+- **One Jest test**
+  _Input:_ _React dev, Cyprus, sort by experience desc_
+  _Expectation:_ candidate **#12** appears above **#5**
+- **Links** — provide both (a) the GitHub repository URL and (b) a live deployment link (e.g., Vercel, Netlify)
 
 ## 7 · Evaluation Criteria
 
-* **Agent transparency** – each MCP phase surfaced in order
-* **Prompt robustness** – LLM reliably emits valid JSON; graceful retry on errors
-* **Animation & UX** – timeline staggers, rows re‑flow without jank; keyboard shortcut (⌘ + Enter) to send
-* **Code quality** – modular data helpers, tidy state (Context/Zustand), minimal globals
-* **Docs & tests** – quick start, clear tool contracts, meaningful test coverage
+- **Agent transparency** – each MCP phase surfaced in order
+- **Prompt robustness** – LLM reliably emits valid JSON; graceful retry on errors
+- **Animation & UX** – timeline staggers, rows re‑flow without jank; keyboard shortcut (⌘ + Enter) to send
+- **Code quality** – modular data helpers, tidy state (Context/Zustand), minimal globals
+- **Docs & tests** – quick start, clear tool contracts, meaningful test coverage
 
 ---
 

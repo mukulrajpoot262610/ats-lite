@@ -3,7 +3,7 @@
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { useChatStore } from '@/lib/store'
+import { useChatStore } from '@/store/useChatStore'
 import { SendIcon } from 'lucide-react'
 import React from 'react'
 
@@ -18,6 +18,13 @@ export default function ChatInput() {
     setThinkingStartTime,
     currentChatId,
     createNewChat,
+    selectedModel,
+    isStreaming,
+    setIsStreaming,
+    setStreamingMessageId,
+    setStreamingContent,
+    appendStreamingContent,
+    finalizeStreamingMessage,
   } = useChatStore()
 
   const simulateThoughtProcess = (userMessage: string): string[] => {
@@ -35,11 +42,10 @@ export default function ChatInput() {
     return shuffled.slice(0, Math.floor(Math.random() * 2) + 3)
   }
 
-  const handleSend = () => {
-    if (message.trim() && !isThinking) {
+  const handleSend = async () => {
+    if (message.trim() && !isThinking && !isStreaming) {
       const userMessage = message.trim()
 
-      // Ensure we have a current chat
       let chatId = currentChatId
       if (!chatId) {
         chatId = createNewChat()
@@ -51,40 +57,170 @@ export default function ChatInput() {
         sender: 'user',
       })
 
-      // Start the chat (legacy compatibility)
       setChatStarted(true)
-
-      // Clear the input
       setMessage('')
 
-      // Start thinking and record start time
       const startTime = Date.now()
       setThinkingStartTime(startTime)
       setIsThinking(true)
 
-      // Generate thought process for this specific message
       const thoughtProcess = simulateThoughtProcess(userMessage)
 
-      // Simulate AI thinking time and response (2-4 seconds)
-      const thinkingDuration = Math.floor(Math.random() * 3) + 2 // 2-4 seconds
+      try {
+        // Get current messages for context (give a small delay to ensure user message is in state)
+        await new Promise(resolve => setTimeout(resolve, 100))
+        const { messages: currentMessages } = useChatStore.getState()
 
-      setTimeout(() => {
+        console.log('Current messages for context:', currentMessages.length)
+
+        // Convert to OpenAI format
+        const openAIMessages = currentMessages.map(msg => ({
+          role: msg.sender === 'user' ? ('user' as const) : ('assistant' as const),
+          content: msg.text,
+        }))
+
+        // Determine API endpoint and streaming support based on selected model
+        const apiEndpoint = selectedModel.provider === 'ollama' ? '/api/ollama' : '/api/think'
+        const supportsStreaming = selectedModel.provider === 'ollama'
+
+        if (supportsStreaming) {
+          // Handle streaming response for Ollama
+          const response = await fetch(apiEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messages: openAIMessages,
+              model: selectedModel.model,
+              stream: true,
+            }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status}`)
+          }
+
+          // Stop thinking and start streaming
+          setIsThinking(false)
+          setThinkingStartTime(null)
+          setIsStreaming(true)
+          setStreamingContent('')
+
+          // Add initial empty message for streaming
+          const streamingId = Date.now().toString()
+          setStreamingMessageId(streamingId)
+
+          addMessage({
+            id: streamingId,
+            text: '',
+            sender: 'assistant',
+            model: selectedModel.name,
+            thinking: {
+              duration: Math.round((Date.now() - startTime) / 1000),
+              content: thoughtProcess,
+            },
+          })
+
+          // Small delay to ensure message is added before we start streaming
+          await new Promise(resolve => setTimeout(resolve, 100))
+
+          // Process streaming response
+          const reader = response.body?.getReader()
+          const decoder = new TextDecoder()
+
+          if (reader) {
+            try {
+              while (true) {
+                const { done, value } = await reader.read()
+                if (done) break
+
+                const chunk = decoder.decode(value)
+                const lines = chunk.split('\n')
+
+                for (const line of lines) {
+                  if (line.startsWith('data: ')) {
+                    try {
+                      const data = JSON.parse(line.slice(6))
+                      if (data.content) {
+                        appendStreamingContent(data.content)
+                      }
+                      if (data.done) {
+                        finalizeStreamingMessage()
+                        return
+                      }
+                    } catch (parseError) {
+                      console.error('Error parsing streaming data:', parseError)
+                    }
+                  }
+                }
+              }
+            } catch (streamError) {
+              console.error('Streaming error:', streamError)
+            } finally {
+              finalizeStreamingMessage()
+            }
+          }
+        } else {
+          // Handle non-streaming response for OpenAI
+          const response = await fetch(apiEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messages: openAIMessages,
+            }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status}`)
+          }
+
+          const data = await response.json()
+
+          console.log('API Response:', data)
+
+          const endTime = Date.now()
+          const actualDuration = Math.round((endTime - startTime) / 1000)
+
+          // Stop thinking and add AI response
+          setIsThinking(false)
+          setThinkingStartTime(null)
+
+          console.log('Adding AI message:', data.message)
+
+          addMessage({
+            text: data.message,
+            sender: 'assistant',
+            model: selectedModel.name,
+            thinking: {
+              duration: actualDuration,
+              content: thoughtProcess,
+            },
+          })
+        }
+
+        console.log('Messages after adding AI response:', useChatStore.getState().messages.length)
+      } catch (error) {
+        console.error('Error calling think API:', error)
+
         const endTime = Date.now()
         const actualDuration = Math.round((endTime - startTime) / 1000)
 
-        // Stop thinking and add response with thinking data
         setIsThinking(false)
         setThinkingStartTime(null)
 
         addMessage({
-          text: "Thanks for your message! I'm here to help you find the best candidates. I've analyzed your request and I'm ready to assist you with comprehensive candidate recommendations.",
+          text: 'I apologize, but I encountered an error while processing your request. Please try again or check your connection.',
           sender: 'assistant',
+          model: selectedModel.name,
           thinking: {
             duration: actualDuration,
-            content: thoughtProcess,
+            content: ['Error occurred while processing request'],
           },
         })
-      }, thinkingDuration * 1000)
+      }
     }
   }
 
@@ -96,7 +232,7 @@ export default function ChatInput() {
   }
 
   return (
-    <div className="flex items-center space-x-4 w-full">
+    <div className="flex items-center space-x-4 w-full mb-4">
       <div className="flex-1 max-w-4xl mx-auto">
         <div className="bg-background rounded-xl border border-border w-full p-4">
           <div className="flex items-center justify-between h-full relative">
@@ -107,9 +243,15 @@ export default function ChatInput() {
               onChange={e => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
               maxHeight={300}
-              placeholder={isThinking ? 'AI is thinking...' : 'Ask ATSLite whatever you want...'}
+              placeholder={
+                isThinking
+                  ? 'AI is thinking...'
+                  : isStreaming
+                  ? 'AI is responding...'
+                  : 'Ask ATSLite whatever you want...'
+              }
               className="w-full bg-transparent border-none outline-none resize-none text-foreground placeholder-muted-foreground h-full"
-              disabled={isThinking}
+              disabled={isThinking || isStreaming}
             />
           </div>
 
@@ -119,7 +261,12 @@ export default function ChatInput() {
                 {message.length}/1000
               </span>
             </div>
-            <Button size="icon" onClick={handleSend} disabled={message.length === 0 || isThinking} className="gap-2">
+            <Button
+              size="icon"
+              onClick={handleSend}
+              disabled={message.length === 0 || isThinking || isStreaming}
+              className="gap-2"
+            >
               <SendIcon className="w-4 h-4" />
             </Button>
           </div>

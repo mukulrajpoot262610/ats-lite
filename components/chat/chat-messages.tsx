@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useChatStore } from '@/lib/store'
+import { useChatStore } from '@/store/useChatStore'
 import { cn } from '@/lib/utils'
 import { Button } from '../ui/button'
 import { CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react'
@@ -12,7 +12,7 @@ import ChatThinking from './chat-thinking'
 import ThinkingDropdown from './thinking-dropdown'
 
 export default function ChatMessages() {
-  const { messages, isThinking } = useChatStore()
+  const { messages, isThinking, isStreaming, streamingContent, streamingMessageId } = useChatStore()
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -28,7 +28,7 @@ export default function ChatMessages() {
   return (
     <FadeContent duration={300} className="flex-1 flex flex-col min-h-0">
       <ScrollArea className="flex-1 w-full">
-        <div className="flex flex-col space-y-3 w-full max-w-4xl p-4">
+        <div className="flex flex-col space-y-3 w-full max-w-4xl p-4 mt-20">
           {messages.map(message => (
             <div
               key={message.id}
@@ -42,7 +42,17 @@ export default function ChatMessages() {
                     : 'w-full mb-8 justify-start flex flex-col items-start',
                 )}
               >
-                <p className="text-sm">{message.text}</p>
+                <p className="text-lg">
+                  {message.id === streamingMessageId && isStreaming ? streamingContent : message.text}
+                  {message.id === streamingMessageId && isStreaming && <span className="animate-pulse">|</span>}
+                </p>
+
+                {/* Show model info for assistant messages */}
+                {message.sender === 'assistant' && message.model && (
+                  <div className="mt-1 mb-1">
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md">{message.model}</span>
+                  </div>
+                )}
 
                 {/* Show thinking dropdown for assistant messages with thinking data */}
                 {message.sender === 'assistant' && message.thinking && (

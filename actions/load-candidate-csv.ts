@@ -12,7 +12,7 @@ export async function LoadCandidates(): Promise<Candidate[]> {
     Papa.parse<Candidate>(csvText, {
       header: true,
       skipEmptyLines: true,
-      dynamicTyping: false,
+      dynamicTyping: true,
       complete: result => {
         const cleaned = result.data.map(
           (row: Partial<Candidate>) =>

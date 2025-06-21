@@ -18,12 +18,16 @@ import { CommandShortcut } from '../ui/command'
 import { Calendar } from 'lucide-react'
 import { useState } from 'react'
 import { useEffect } from 'react'
-import { useChatStore } from '@/lib/store'
+import { useChatStore } from '@/store/useChatStore'
+import { toast } from 'sonner'
 
 export function NavMain() {
   const { open } = useSidebar()
   const [openCommand, setOpenCommand] = useState(false)
-  const { createNewChat } = useChatStore()
+  const { createNewChat, chats } = useChatStore()
+
+  // Check if there's an empty chat that exists
+  const hasEmptyChat = chats.some(chat => chat.messages.length === 0)
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -33,16 +37,31 @@ export function NavMain() {
       }
       if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        createNewChat()
+        handleNewChat()
       }
     }
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [createNewChat])
+  }, [])
+
+  const handleNewChat = () => {
+    // Check if there's already an empty chat before creating
+    const existingEmptyChat = chats.find(chat => chat.messages.length === 0)
+
+    if (existingEmptyChat) {
+      // Show feedback that we're switching to existing empty chat
+      toast.info('Switched to existing empty chat', {
+        description: 'You already have an empty chat. Start typing to begin the conversation!',
+        duration: 3000,
+      })
+    }
+
+    createNewChat()
+  }
 
   const handleItemClick = (item: (typeof NAV_MAIN)[0]) => {
     if (item.title === 'New Chat') {
-      createNewChat()
+      handleNewChat()
     } else if (item.hasCommand) {
       setOpenCommand(true)
     }
@@ -60,12 +79,18 @@ export function NavMain() {
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton
             isActive={item.isActive}
-            className="p-4 h-10 gap-2 group text-xs cursor-pointer"
+            className={cn(
+              'p-4 h-10 gap-2 group text-xs cursor-pointer',
+              item.title === 'New Chat' && hasEmptyChat && 'text-muted-foreground',
+            )}
             onClick={() => handleItemClick(item)}
+            title={item.title === 'New Chat' && hasEmptyChat ? 'Will switch to existing empty chat' : undefined}
           >
             <div className="flex items-center gap-2 flex-1">
               <item.icon className="w-4 h-4" />
-              <span className={cn(open ? 'block' : 'hidden')}>{item.title}</span>
+              <span className={cn(open ? 'block' : 'hidden')}>
+                {item.title === 'New Chat' && hasEmptyChat ? 'Switch to Chat' : item.title}
+              </span>
             </div>
             <kbd className={cn(open && 'visible', 'invisible')}>
               <span className="text-xs font-semibold text-muted-foreground">{item.shortcut}</span>

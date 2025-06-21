@@ -3,7 +3,7 @@
 import React from 'react'
 import FadeContent from '@/components/animations/fade-content'
 import { SUGGESTIONS } from '@/constants/suggestions'
-import { useChatStore } from '@/lib/store'
+import { useChatStore } from '@/store/useChatStore'
 
 export default function ChatSuggestions() {
   const {
