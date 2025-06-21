@@ -18,10 +18,12 @@ import { CommandShortcut } from '../ui/command'
 import { Calendar } from 'lucide-react'
 import { useState } from 'react'
 import { useEffect } from 'react'
+import { useChatStore } from '@/lib/store'
 
 export function NavMain() {
   const { open } = useSidebar()
   const [openCommand, setOpenCommand] = useState(false)
+  const { createNewChat } = useChatStore()
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -29,10 +31,22 @@ export function NavMain() {
         e.preventDefault()
         setOpenCommand(open => !open)
       }
+      if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        createNewChat()
+      }
     }
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [])
+  }, [createNewChat])
+
+  const handleItemClick = (item: (typeof NAV_MAIN)[0]) => {
+    if (item.title === 'New Chat') {
+      createNewChat()
+    } else if (item.hasCommand) {
+      setOpenCommand(true)
+    }
+  }
 
   return (
     <SidebarMenu>
@@ -45,20 +59,17 @@ export function NavMain() {
       {NAV_MAIN.map(item => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton
-            asChild
             isActive={item.isActive}
-            className="p-4 h-10 gap-2 group text-xs"
-            onClick={() => item.hasCommand && setOpenCommand(true)}
+            className="p-4 h-10 gap-2 group text-xs cursor-pointer"
+            onClick={() => handleItemClick(item)}
           >
-            <a href={item.url}>
-              <div className="flex items-center gap-2 flex-1">
-                <item.icon className="w-4 h-4" />
-                <span className={cn(open ? 'block' : 'hidden')}>{item.title}</span>
-              </div>
-              <kbd className={cn(open && 'visible', 'invisible')}>
-                <span className="text-xs font-semibold text-muted-foreground">{item.shortcut}</span>
-              </kbd>
-            </a>
+            <div className="flex items-center gap-2 flex-1">
+              <item.icon className="w-4 h-4" />
+              <span className={cn(open ? 'block' : 'hidden')}>{item.title}</span>
+            </div>
+            <kbd className={cn(open && 'visible', 'invisible')}>
+              <span className="text-xs font-semibold text-muted-foreground">{item.shortcut}</span>
+            </kbd>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}

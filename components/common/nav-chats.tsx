@@ -1,6 +1,6 @@
 'use client'
 
-import { Link, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Link, MoreHorizontal, Trash2, MessageSquare } from 'lucide-react'
 
 import {
   DropdownMenu,
@@ -18,53 +18,102 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { useChatStore } from '@/lib/store'
+import { cn } from '@/lib/utils'
 
-export function NavChats({
-  chats,
-}: {
-  chats: {
-    name: string
-    url: string
-  }[]
-}) {
-  const { isMobile } = useSidebar()
+export function NavChats() {
+  const { isMobile, open } = useSidebar()
+  const { chats, currentChatId, switchToChat, deleteChat } = useChatStore()
+
+  const handleChatClick = (chatId: string) => {
+    switchToChat(chatId)
+  }
+
+  const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    deleteChat(chatId)
+  }
+
+  const formatChatTime = (date: Date) => {
+    const now = new Date()
+    const diffInHours = Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60)
+
+    if (diffInHours < 1) {
+      return 'Just now'
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)}h ago`
+    } else {
+      return date.toLocaleDateString()
+    }
+  }
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden p-4">
-      <SidebarGroupLabel className="text-sm">Chats</SidebarGroupLabel>
+    <SidebarGroup className="p-4">
+      <SidebarGroupLabel className={cn('text-sm', !open && 'sr-only')}>Recent Chats</SidebarGroupLabel>
       <SidebarMenu>
-        {chats.map(item => (
-          <SidebarMenuItem key={item.name} className="flex items-center gap-2">
-            <SidebarMenuButton asChild className="text-xs py-4 h-8">
-              <a href={item.url} title={item.name}>
-                <span>{item.name}</span>
-              </a>
-            </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-56 rounded-lg"
-                side={isMobile ? 'bottom' : 'right'}
-                align={isMobile ? 'end' : 'start'}
+        {chats.length === 0 ? (
+          <div className={cn('px-2 py-4 text-xs text-muted-foreground text-center', !open && 'hidden')}>
+            No chats yet. Start a new conversation!
+          </div>
+        ) : (
+          chats.map(chat => (
+            <SidebarMenuItem key={chat.id} className="flex items-center gap-2">
+              <SidebarMenuButton
+                className={cn(
+                  'text-xs py-2 px-2 h-auto cursor-pointer hover:bg-accent/50 transition-colors',
+                  currentChatId === chat.id && 'bg-accent',
+                  !open && 'justify-center',
+                )}
+                onClick={() => handleChatClick(chat.id)}
+                title={open ? undefined : chat.title}
               >
-                <DropdownMenuItem className="text-xs p-2">
-                  <Link className="text-muted-foreground" />
-                  <span>Copy Link</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-xs p-2">
-                  <Trash2 className="text-muted-foreground" />
-                  <span>Delete</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        ))}
+                <div className={cn('flex items-center gap-2 w-full min-w-0', !open && 'justify-center')}>
+                  <MessageSquare className="w-3 h-3 flex-shrink-0 text-muted-foreground" />
+                  {open && (
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      <span className="font-medium truncate" title={chat.title}>
+                        {chat.title}
+                      </span>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{chat.messages.length} messages</span>
+                        <span>•</span>
+                        <span>{formatChatTime(chat.updatedAt)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </SidebarMenuButton>
+              {open && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuAction showOnHover>
+                      <MoreHorizontal />
+                      <span className="sr-only">More</span>
+                    </SidebarMenuAction>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-56 rounded-lg"
+                    side={isMobile ? 'bottom' : 'right'}
+                    align={isMobile ? 'end' : 'start'}
+                  >
+                    <DropdownMenuItem className="text-xs p-2">
+                      <Link className="text-muted-foreground w-4 h-4" />
+                      <span>Copy Link</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-xs p-2 text-red-600 focus:text-red-600 focus:bg-red-50"
+                      onClick={e => handleDeleteChat(chat.id, e)}
+                    >
+                      <Trash2 className="text-red-500 w-4 h-4" />
+                      <span>Delete Chat</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </SidebarMenuItem>
+          ))
+        )}
       </SidebarMenu>
     </SidebarGroup>
   )

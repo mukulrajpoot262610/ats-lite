@@ -1,12 +1,7 @@
+'use client'
+
 import React from 'react'
-import ChatGreetings from './chat-greetings'
-import ChatSuggestions from './chat-suggestions'
 
 export default function ChatHeader() {
-  return (
-    <div className="flex flex-col items-center justify-center">
-      <ChatGreetings />
-      <ChatSuggestions />
-    </div>
-  )
+  return <div className="flex items-center justify-between mb-6">{/* Header content can go here if needed */}</div>
 }

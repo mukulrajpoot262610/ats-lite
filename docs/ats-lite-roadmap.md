@@ -90,7 +90,7 @@
 
 | Task                                      | Status |
 | ----------------------------------------- | ------ |
-| CSV load and transformation               | ⬜     |
+| CSV load and transformation               | ✅     |
 | Chat input + streaming                    | ⬜     |
 | LLM prompt for THINK (filter + rank)      | ⬜     |
 | LLM prompt for SPEAK (summary)            | ⬜     |

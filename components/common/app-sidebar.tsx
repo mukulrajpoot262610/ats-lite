@@ -15,7 +15,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarSeparator />
       <SidebarContent>
-        <NavChats chats={NAV_DATA.chats} />
+        <NavChats />
         <Separator className="mt-auto" />
         <NavUser user={NAV_DATA.user} />
       </SidebarContent>
