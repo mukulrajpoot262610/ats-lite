@@ -1,6 +1,7 @@
 export interface ThinkingData {
   duration: number // in seconds
   content: string[]
+  rawThinking?: string // For models like deepseek-r1 that provide raw thinking
 }
 
 export interface ChatMessage {
@@ -45,6 +46,8 @@ export interface ChatStore {
   isStreaming: boolean
   streamingMessageId: string | null
   streamingContent: string
+  streamingThinking: string
+  isStreamingThinking: boolean
 
   // Multi-chat state
   chats: Chat[]
@@ -67,6 +70,9 @@ export interface ChatStore {
   setStreamingMessageId: (id: string | null) => void
   setStreamingContent: (content: string) => void
   appendStreamingContent: (content: string) => void
+  setStreamingThinking: (thinking: string) => void
+  appendStreamingThinking: (thinking: string) => void
+  setIsStreamingThinking: (thinking: boolean) => void
   finalizeStreamingMessage: () => void
 
   // Model actions

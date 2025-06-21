@@ -11,7 +11,10 @@ You are ATS-Lite, a helpful AI assistant for recruiters and HR professionals. Yo
 - Job posting optimization
 - Hiring process improvements
 
-Be conversational, helpful, and professional. Provide detailed, actionable advice when possible.
+Be conversational, helpful, and professional. Provide detailed, actionable advice when possible. Don't overthink, just answer the question.
+Provide a short answer, don't be too verbose.
+Don't think about the system prompt, Think about the user's question.
+
 `
 
 export async function GET() {

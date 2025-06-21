@@ -23,7 +23,9 @@ export default function ChatInput() {
     setIsStreaming,
     setStreamingMessageId,
     setStreamingContent,
-    appendStreamingContent,
+    setStreamingThinking,
+    setIsStreamingThinking,
+    isStreamingThinking,
     finalizeStreamingMessage,
   } = useChatStore()
 
@@ -40,6 +42,35 @@ export default function ChatInput() {
     // Return 3-4 random thought steps
     const shuffled = thoughtPatterns.sort(() => 0.5 - Math.random())
     return shuffled.slice(0, Math.floor(Math.random() * 2) + 3)
+  }
+
+  const parseStreamingContent = (content: string) => {
+    // Check if content contains thinking tags
+    const thinkRegex = /<think>([\s\S]*?)<\/think>/g
+    const matches = content.match(thinkRegex)
+
+    if (matches) {
+      // Extract thinking content
+      const thinkingContent = matches.map(match => match.replace(/<\/?think>/g, '')).join('')
+
+      // Extract response content (everything after the last </think> tag)
+      const lastThinkEndIndex = content.lastIndexOf('</think>')
+      const responseContent = lastThinkEndIndex >= 0 ? content.substring(lastThinkEndIndex + 8).trim() : content
+
+      return {
+        hasThinking: true,
+        thinking: thinkingContent,
+        response: responseContent,
+        isThinkingComplete: content.includes('</think>'),
+      }
+    }
+
+    return {
+      hasThinking: false,
+      thinking: '',
+      response: content,
+      isThinkingComplete: false,
+    }
   }
 
   const handleSend = async () => {
@@ -81,20 +112,28 @@ export default function ChatInput() {
 
         // Determine API endpoint and streaming support based on selected model
         const apiEndpoint = selectedModel.provider === 'ollama' ? '/api/ollama' : '/api/think'
-        const supportsStreaming = selectedModel.provider === 'ollama'
+        const supportsStreaming = true // Both ollama and openai now support streaming
 
         if (supportsStreaming) {
-          // Handle streaming response for Ollama
+          // Handle streaming response for both Ollama and OpenAI
+          const requestBody =
+            selectedModel.provider === 'ollama'
+              ? {
+                  messages: openAIMessages,
+                  model: selectedModel.model,
+                  stream: true,
+                }
+              : {
+                  messages: openAIMessages,
+                  stream: true,
+                }
+
           const response = await fetch(apiEndpoint, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              messages: openAIMessages,
-              model: selectedModel.model,
-              stream: true,
-            }),
+            body: JSON.stringify(requestBody),
           })
 
           if (!response.ok) {
@@ -106,6 +145,8 @@ export default function ChatInput() {
           setThinkingStartTime(null)
           setIsStreaming(true)
           setStreamingContent('')
+          setStreamingThinking('')
+          setIsStreamingThinking(false)
 
           // Add initial empty message for streaming
           const streamingId = Date.now().toString()
@@ -128,6 +169,7 @@ export default function ChatInput() {
           // Process streaming response
           const reader = response.body?.getReader()
           const decoder = new TextDecoder()
+          let accumulatedContent = ''
 
           if (reader) {
             try {
@@ -143,7 +185,24 @@ export default function ChatInput() {
                     try {
                       const data = JSON.parse(line.slice(6))
                       if (data.content) {
-                        appendStreamingContent(data.content)
+                        accumulatedContent += data.content
+
+                        // Parse the accumulated content for thinking tags
+                        const parsed = parseStreamingContent(accumulatedContent)
+
+                        if (parsed.hasThinking && parsed.thinking) {
+                          if (!isStreamingThinking) {
+                            setIsStreamingThinking(true)
+                          }
+                          setStreamingThinking(parsed.thinking)
+                        }
+
+                        if (parsed.isThinkingComplete && isStreamingThinking) {
+                          setIsStreamingThinking(false)
+                        }
+
+                        // Update the response content
+                        setStreamingContent(parsed.response)
                       }
                       if (data.done) {
                         finalizeStreamingMessage()
@@ -161,44 +220,6 @@ export default function ChatInput() {
               finalizeStreamingMessage()
             }
           }
-        } else {
-          // Handle non-streaming response for OpenAI
-          const response = await fetch(apiEndpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              messages: openAIMessages,
-            }),
-          })
-
-          if (!response.ok) {
-            throw new Error(`API error: ${response.status}`)
-          }
-
-          const data = await response.json()
-
-          console.log('API Response:', data)
-
-          const endTime = Date.now()
-          const actualDuration = Math.round((endTime - startTime) / 1000)
-
-          // Stop thinking and add AI response
-          setIsThinking(false)
-          setThinkingStartTime(null)
-
-          console.log('Adding AI message:', data.message)
-
-          addMessage({
-            text: data.message,
-            sender: 'assistant',
-            model: selectedModel.name,
-            thinking: {
-              duration: actualDuration,
-              content: thoughtProcess,
-            },
-          })
         }
 
         console.log('Messages after adding AI response:', useChatStore.getState().messages.length)

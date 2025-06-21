@@ -1,4 +1,4 @@
-import { LoadCandidates } from '@/actions/load-candidate-csv'
+import { LoadCandidates } from '@/lib/load-candidate-csv'
 import { filterCandidates } from '@/lib/tools'
 
 export default async function TestPage() {

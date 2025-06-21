@@ -83,13 +83,33 @@ OLLAMA_BASE_URL=http://localhost:11434
 
 ## Recommended Models for ATS-Lite
 
-| Model        | Size | Best For                           | Speed     |
-| ------------ | ---- | ---------------------------------- | --------- |
-| `gemma:2b`   | 2GB  | Quick responses, basic tasks       | Very Fast |
-| `llama2`     | 4GB  | General conversation, HR advice    | Fast      |
-| `mistral`    | 4GB  | Detailed analysis, recommendations | Fast      |
-| `codellama`  | 4GB  | Technical recruitment, code review | Fast      |
-| `llama2:13b` | 8GB  | Complex analysis, best quality     | Moderate  |
+| Model         | Size | Best For                           | Speed     | Thinking Support |
+| ------------- | ---- | ---------------------------------- | --------- | ---------------- |
+| `gemma:2b`    | 2GB  | Quick responses, basic tasks       | Very Fast | No               |
+| `llama2`      | 4GB  | General conversation, HR advice    | Fast      | No               |
+| `mistral`     | 4GB  | Detailed analysis, recommendations | Fast      | No               |
+| `codellama`   | 4GB  | Technical recruitment, code review | Fast      | No               |
+| `llama2:13b`  | 8GB  | Complex analysis, best quality     | Moderate  | No               |
+| `deepseek-r1` | 8GB  | Advanced reasoning, shows thinking | Moderate  | **Yes**          |
+
+### Models with Thinking Support
+
+Some advanced models like **deepseek-r1** show their reasoning process using `<think>` tags. When these models stream responses, you'll see:
+
+1. **Live Thinking**: The model's reasoning process displayed in real-time
+2. **Thinking Indicator**: Visual feedback showing "Thinking..." with animated dots
+3. **Collapsible Thinking**: Expandable section to view the complete reasoning
+4. **Separated Content**: Clear distinction between thinking process and final response
+
+To use these models:
+
+```bash
+# Download deepseek-r1 (example)
+ollama pull deepseek-r1
+
+# Or other reasoning models
+ollama pull qwen2.5-coder:32b
+```
 
 ## Troubleshooting
 
@@ -125,6 +145,7 @@ OLLAMA_BASE_URL=http://localhost:11434
 - **Live Responses**: See AI responses appear word-by-word as they're generated
 - **Visual Feedback**: Animated cursor shows active streaming
 - **Instant Feedback**: No waiting for complete responses
+- **Thinking Process**: Advanced models (like deepseek-r1) show their reasoning process in real-time
 
 ### Performance Optimizations
 

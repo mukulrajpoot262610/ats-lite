@@ -8,9 +8,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 interface ThinkingDropdownProps {
   duration: number
   content: string[]
+  rawThinking?: string
 }
 
-export default function ThinkingDropdown({ duration, content }: ThinkingDropdownProps) {
+export default function ThinkingDropdown({ duration, content, rawThinking }: ThinkingDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -31,14 +32,23 @@ export default function ThinkingDropdown({ duration, content }: ThinkingDropdown
       <CollapsibleContent className="mt-2">
         <div className="bg-muted/30 rounded-md p-3 border border-border/30">
           <div className="text-xs font-medium text-muted-foreground mb-2">Thinking Process ({duration}s):</div>
-          <div className="space-y-2">
-            {content.map((thought, index) => (
-              <div key={index} className="flex items-start space-x-2">
-                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0" />
-                <p className="text-xs text-muted-foreground leading-relaxed">{thought}</p>
-              </div>
-            ))}
-          </div>
+
+          {rawThinking ? (
+            <div className="text-xs text-muted-foreground">
+              <pre className="whitespace-pre-wrap font-mono leading-relaxed bg-background rounded-md p-2 border">
+                {rawThinking}
+              </pre>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {content.map((thought, index) => (
+                <div key={index} className="flex items-start space-x-2">
+                  <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-1.5 flex-shrink-0" />
+                  <p className="text-xs text-muted-foreground leading-relaxed">{thought}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </CollapsibleContent>
     </Collapsible>

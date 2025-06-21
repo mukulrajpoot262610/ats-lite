@@ -23,6 +23,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   isStreaming: false,
   streamingMessageId: null,
   streamingContent: '',
+  streamingThinking: '',
+  isStreamingThinking: false,
 
   // Multi-chat state
   chats: [],
@@ -45,20 +47,44 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setStreamingMessageId: (id: string | null) => set({ streamingMessageId: id }),
   setStreamingContent: (content: string) => set({ streamingContent: content }),
   appendStreamingContent: (content: string) => set(state => ({ streamingContent: state.streamingContent + content })),
+  setStreamingThinking: (thinking: string) => set({ streamingThinking: thinking }),
+  appendStreamingThinking: (thinking: string) =>
+    set(state => ({ streamingThinking: state.streamingThinking + thinking })),
+  setIsStreamingThinking: (thinking: boolean) => set({ isStreamingThinking: thinking }),
 
   finalizeStreamingMessage: () => {
     const state = get()
-    const { streamingMessageId, streamingContent, currentChatId } = state
+    const { streamingMessageId, streamingContent, streamingThinking, currentChatId } = state
 
-    if (!streamingMessageId || !currentChatId || !streamingContent) return
+    if (!streamingMessageId || !currentChatId) return
 
     // Update the streaming message with final content
     set(stateUpdate => {
       const updatedChats = stateUpdate.chats.map(chat => {
         if (chat.id === currentChatId) {
-          const updatedMessages = chat.messages.map(msg =>
-            msg.id === streamingMessageId ? { ...msg, text: streamingContent } : msg,
-          )
+          const updatedMessages = chat.messages.map(msg => {
+            if (msg.id === streamingMessageId) {
+              const updatedThinking = msg.thinking
+                ? {
+                    ...msg.thinking,
+                    rawThinking: streamingThinking || undefined,
+                  }
+                : streamingThinking
+                ? {
+                    duration: 0,
+                    content: [],
+                    rawThinking: streamingThinking,
+                  }
+                : msg.thinking
+
+              return {
+                ...msg,
+                text: streamingContent || msg.text,
+                thinking: updatedThinking,
+              }
+            }
+            return msg
+          })
           return { ...chat, messages: updatedMessages, updatedAt: new Date() }
         }
         return chat
@@ -72,6 +98,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         isStreaming: false,
         streamingMessageId: null,
         streamingContent: '',
+        streamingThinking: '',
+        isStreamingThinking: false,
       }
     })
   },
