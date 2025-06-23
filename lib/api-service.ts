@@ -3,7 +3,7 @@ import { APIError } from '@/types/api.types'
 export class ApiService {
   private baseURL: string
 
-  constructor(baseURL: string = 'http://localhost:3000') {
+  constructor(baseURL: string = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000') {
     this.baseURL = baseURL
   }
 
