@@ -4,6 +4,10 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { ChatMessage } from '@/types/chat.types'
 import MessageActions from './message-actions'
+import { ThinkingTimeline, createTimelineSteps } from './thinking-timeline'
+import { CandidateResults } from './candidate-results'
+import { useMCPStore } from '@/store/useMcpStore'
+import { Candidate } from '@/types/candidate.types'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
@@ -13,9 +17,16 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 interface MessageItemProps {
   message: ChatMessage
+  onCandidateClick?: (candidate: Candidate) => void
 }
 
-export default function MessageItem({ message }: MessageItemProps) {
+export default function MessageItem({ message, onCandidateClick }: MessageItemProps) {
+  const { phase, plan, filtered, ranked, reply } = useMCPStore()
+
+  const steps = createTimelineSteps(phase, plan || undefined, filtered, ranked, reply)
+  const isComplete = message.isComplete || phase === 'idle'
+  const candidates = message.data?.candidates as Candidate[]
+
   return (
     <div className={cn('flex flex-col group', message.sender === 'user' ? 'items-end' : 'items-start')}>
       <div
@@ -26,8 +37,22 @@ export default function MessageItem({ message }: MessageItemProps) {
             : 'w-full mb-8 justify-start flex flex-col items-start',
         )}
       >
-        <div className="flex items-start">
-          <div className="text-sm tracking-normal leading-relaxed flex-1 prose prose-sm max-w-none dark:prose-invert">
+        {/* Handle thinking messages */}
+        {message.sender === 'thinking' && (
+          <div className="flex flex-col items-start justify-end w-full">
+            <ThinkingTimeline steps={steps} isComplete={isComplete} />
+          </div>
+        )}
+
+        {/* Handle candidate results messages */}
+        {message.data && message.data.type === 'candidate-results' && (
+          <div className="flex flex-col items-start justify-end w-full">
+            <CandidateResults candidates={candidates} onCandidateClick={onCandidateClick} />
+          </div>
+        )}
+
+        <div className="flex items-start w-full">
+          <div className="text-sm tracking-normal leading-relaxed flex-1 prose prose-sm max-w-none dark:prose-invert w-full">
             <Markdown
               remarkPlugins={[remarkGfm, remarkBreaks]}
               rehypePlugins={[rehypeRaw]}

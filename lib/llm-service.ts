@@ -31,7 +31,8 @@ export class LLMService {
   },
   "rank": {
     "primary": "field",
-    "tie_breakers": ["field", "field"]
+    "tie_breakers": ["field", "field"],
+    "order": "asc" | "desc"
   }
 }
 
@@ -63,7 +64,7 @@ ${headers.join(', ')}
 6. 🧮 Ranking Logic:
 - "primary": the main field to sort by (most important first)
 - "tie_breakers": optional secondary fields for sorting when values are equal
-- Assume ranking is DESCENDING for numbers (e.g., more experience is better)
+- "order": "asc" for ascending order, "desc" for descending order
 
 📦 Output format:
 JSON only, no extra quotes or code blocks. Keep it strict and minimal.

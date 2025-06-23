@@ -2,9 +2,10 @@ export interface ChatMessage {
   id: string
   text: string
   timestamp: Date
-  sender: 'user' | 'assistant'
+  sender: 'user' | 'assistant' | 'thinking' | 'system'
   model?: string
   data?: Record<string, unknown>
+  isComplete?: boolean // For thinking messages
 }
 
 export interface Chat {
