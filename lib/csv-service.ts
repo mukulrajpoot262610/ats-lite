@@ -14,7 +14,7 @@ export async function getCsvHeaders(): Promise<string[]> {
   }
 
   try {
-    const filePath = path.join(process.cwd(), 'public', CSV_CONFIG.DEFAULT_CSV_PATH)
+    const filePath = path.join(process.cwd(), 'data', CSV_CONFIG.DEFAULT_CSV_PATH)
     const csvText = await fs.readFile(filePath, 'utf8')
     const firstLine = csvText.split('\n')[0]
     cachedHeaders = firstLine.split(',').map(header => header.trim())
@@ -31,7 +31,7 @@ export async function clearHeaderCache(): Promise<void> {
 }
 
 export async function loadCandidates(): Promise<Candidate[]> {
-  const filePath = path.join(process.cwd(), 'public', CSV_CONFIG.DEFAULT_CSV_PATH)
+  const filePath = path.join(process.cwd(), 'data', CSV_CONFIG.DEFAULT_CSV_PATH)
   const csvText = await fs.readFile(filePath, 'utf8')
   return new Promise((resolve, reject) => {
     Papa.parse<Candidate>(csvText, {
