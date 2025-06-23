@@ -10,7 +10,7 @@ export async function getCsvHeaders(): Promise<string[]> {
   }
 
   try {
-    const response = await fetch(`/${CSV_CONFIG.DEFAULT_CSV_PATH}`)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/csv`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -30,7 +30,7 @@ export async function clearHeaderCache(): Promise<void> {
 }
 
 export async function loadCandidates(): Promise<Candidate[]> {
-  const response = await fetch(`/${CSV_CONFIG.DEFAULT_CSV_PATH}`)
+  const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/csv`)
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
   }
