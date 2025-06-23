@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Candidate } from '@/types/candidate.types'
 import { FilterPlan, RankingPlan } from '@/types/mcp.types'
+import { MCP_CONFIG } from '@/constants/app-config'
 
 type MCPPhase = 'idle' | 'thinking' | 'filtering' | 'ranking' | 'speaking'
 
@@ -18,8 +19,8 @@ type MCPState = {
 }
 
 export const useMCPStore = create<MCPState>(set => ({
-  phase: 'idle',
-  plan: null,
+  phase: MCP_CONFIG.DEFAULT_PHASE,
+  plan: MCP_CONFIG.DEFAULT_PLAN,
   filtered: [],
   ranked: [],
   reply: '',

@@ -92,10 +92,10 @@
 | ----------------------------------------- | ------ |
 | CSV load and transformation               | ✅     |
 | Chat input + streaming                    | ✅     |
-| LLM prompt for THINK (filter + rank)      | ⬜     |
-| LLM prompt for SPEAK (summary)            | ⬜     |
-| Synchronous filtering logic               | ⬜     |
-| Ranking logic (primary + tiebreakers)     | ⬜     |
+| LLM prompt for THINK (filter + rank)      | ✅     |
+| LLM prompt for SPEAK (summary)            | ✅     |
+| Synchronous filtering logic               | ✅     |
+| Ranking logic (primary + tiebreakers)     | ✅     |
 | UI animations: timeline, table reordering | ⬜     |
 | Candidate detail drawer                   | ⬜     |
 | Jest test for required case               | ⬜     |

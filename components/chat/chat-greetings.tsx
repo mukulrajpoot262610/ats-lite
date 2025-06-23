@@ -2,7 +2,6 @@
 
 import React from 'react'
 import FadeContent from '@/components/animations/fade-content'
-import ModelSelector from './model-selector'
 
 export default function ChatGreetings() {
   return (
@@ -13,12 +12,6 @@ export default function ChatGreetings() {
         <p className="text-muted-foreground mt-4 text-lg max-w-sm leading-tight text-balance text-left">
           Use one of the most common prompts below or use your own to begin
         </p>
-
-        {/* Model Selector */}
-        <div className="mt-6 max-w-sm">
-          <label className="block text-sm font-medium text-muted-foreground mb-2">Choose AI Model</label>
-          <ModelSelector />
-        </div>
       </div>
     </FadeContent>
   )

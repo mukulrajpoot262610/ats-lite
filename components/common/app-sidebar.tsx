@@ -5,7 +5,6 @@ import { Sidebar, SidebarContent, SidebarHeader, SidebarRail, SidebarSeparator }
 import { NavMain } from './nav-main'
 import { NavUser } from './nav-user'
 import { Separator } from '../ui/separator'
-import { NAV_DATA } from '@/constants/nav'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -17,7 +16,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavChats />
         <Separator className="mt-auto" />
-        <NavUser user={NAV_DATA.user} />
+        <NavUser />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

@@ -6,12 +6,13 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/common/app-sidebar'
 import { ThemeProvider } from '@/components/common/theme-provider'
 import { NavHeader } from '@/components/common/nav-header'
+import { APP_CONFIG, THEME_CONFIG } from '@/constants/app-config'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'ATS Lite',
-  description: 'AI Agents for ATS',
+  title: APP_CONFIG.APP_NAME,
+  description: APP_CONFIG.APP_DESCRIPTION,
 }
 
 export default function RootLayout({
@@ -22,7 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased tracking-tight transition-all duration-300`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true} disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme={THEME_CONFIG.DEFAULT_THEME}
+          enableSystem={THEME_CONFIG.ENABLE_SYSTEM}
+          disableTransitionOnChange
+        >
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>

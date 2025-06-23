@@ -1,11 +1,18 @@
 import { Candidate } from '@/types/candidate.types'
-import { FilterPlan, RankingPlan } from '@/types/mcp.types'
+import { FilterPlan, RankingPlan, CandidateStats } from '@/types/mcp.types'
+import { CANDIDATE_CONFIG } from '@/constants/app-config'
 
+/**
+ * Normalize candidate values for comparison
+ */
 function normalize(val: unknown): string {
   if (Array.isArray(val)) return val.join(' ').toLowerCase()
   return String(val ?? '').toLowerCase()
 }
 
+/**
+ * Check if a numeric value matches a filter with operators
+ */
 function matchesNumericFilter(candidateVal: number, filterVal: string): boolean {
   if (filterVal.startsWith('>=')) return candidateVal >= parseFloat(filterVal.slice(2))
   if (filterVal.startsWith('<=')) return candidateVal <= parseFloat(filterVal.slice(2))
@@ -14,6 +21,9 @@ function matchesNumericFilter(candidateVal: number, filterVal: string): boolean 
   return candidateVal === parseFloat(filterVal)
 }
 
+/**
+ * Filter candidates based on include/exclude criteria
+ */
 export function filterCandidates(plan: FilterPlan, allCandidates: Candidate[]): Candidate[] {
   return allCandidates.filter(candidate => {
     const include = plan.include || {}
@@ -47,54 +57,89 @@ export function filterCandidates(plan: FilterPlan, allCandidates: Candidate[]): 
   })
 }
 
-export function rankCandidates(candidates: Candidate[], plan: RankingPlan): Candidate[] {
+/**
+ * Rank candidates based on primary field and tie-breakers
+ */
+export function rankCandidates(plan: RankingPlan, candidates: Candidate[]): Candidate[] {
+  const order = plan.order || CANDIDATE_CONFIG.DEFAULT_SORT_ORDER
+
   return [...candidates].sort((a, b) => {
     const primaryA = a[plan.primary]
     const primaryB = b[plan.primary]
 
-    // Descending for primary
+    // Primary field sorting based on order parameter
     if (typeof primaryA === 'number' && typeof primaryB === 'number') {
-      if (primaryB !== primaryA) return primaryB - primaryA
+      if (primaryB !== primaryA) {
+        return order === 'desc' ? primaryB - primaryA : primaryA - primaryB
+      }
     } else {
       const aStr = String(primaryA).toLowerCase()
       const bStr = String(primaryB).toLowerCase()
-      if (aStr !== bStr) return aStr.localeCompare(bStr)
+      if (aStr !== bStr) {
+        return order === 'desc' ? bStr.localeCompare(aStr) : aStr.localeCompare(bStr)
+      }
     }
 
-    // Tie-breakers (ascending)
+    // Tie-breakers using the same order as primary
     for (const tieKey of plan.tie_breakers || []) {
       const tieA = a[tieKey]
       const tieB = b[tieKey]
 
       if (typeof tieA === 'number' && typeof tieB === 'number') {
-        if (tieA !== tieB) return tieA - tieB
+        if (tieA !== tieB) {
+          return order === 'desc' ? tieB - tieA : tieA - tieB
+        }
       } else {
         const aStr = String(tieA).toLowerCase()
         const bStr = String(tieB).toLowerCase()
-        if (aStr !== bStr) return aStr.localeCompare(bStr)
+        if (aStr !== bStr) {
+          return order === 'desc' ? bStr.localeCompare(aStr) : aStr.localeCompare(bStr)
+        }
       }
     }
 
-    return 0 // equal
+    return 0
   })
 }
 
-export async function thinkPlan(
-  message: string,
-  csvHeader: string[],
-): Promise<{ filter: FilterPlan; rank: RankingPlan }> {
-  const prompt = `You are an ATS agent. Based on this message: "${message}", and this CSV header: ${csvHeader.join(
-    ', ',
-  )}, reply ONLY in this JSON format:
-  {
-    "filter": { include?: { key: value }, exclude?: { key: value } },
-    "rank": { primary: "field", tie_breakers?: ["field", "field"] }
-  }`
+/**
+ * Generate aggregate statistics for candidates
+ */
+export function aggregateStats(candidates: Candidate[]): CandidateStats {
+  if (candidates.length === 0) {
+    return {
+      count: 0,
+      avg_experience: 0,
+      top_skills: [],
+    }
+  }
 
-  const res = await fetch('/api/think', {
-    method: 'POST',
-    body: JSON.stringify({ prompt }),
+  // Calculate average experience
+  const totalExperience = candidates.reduce((sum, c) => sum + c.years_experience, 0)
+  const avg_experience =
+    Math.round((totalExperience / candidates.length) * Math.pow(10, CANDIDATE_CONFIG.EXPERIENCE_PRECISION)) /
+    Math.pow(10, CANDIDATE_CONFIG.EXPERIENCE_PRECISION)
+
+  // Count skill occurrences
+  const skillCounts = new Map<string, number>()
+  candidates.forEach(candidate => {
+    candidate.skills.forEach(skill => {
+      if (skill && skill.trim()) {
+        const normalizedSkill = skill.trim().toLowerCase()
+        skillCounts.set(normalizedSkill, (skillCounts.get(normalizedSkill) || 0) + 1)
+      }
+    })
   })
-  const json = await res.json()
-  return json.plan
+
+  // Get top skills (sorted by frequency, configurable count)
+  const top_skills = Array.from(skillCounts.entries())
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, CANDIDATE_CONFIG.TOP_SKILLS_COUNT)
+    .map(([skill]) => skill)
+
+  return {
+    count: candidates.length,
+    avg_experience,
+    top_skills,
+  }
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { NAV_MAIN } from '@/constants/nav'
+import { NAV_CONFIG } from '@/constants/app-config'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
 import { Bot, Settings, Smile } from 'lucide-react'
 import { Calculator } from 'lucide-react'
@@ -59,10 +59,10 @@ export function NavMain() {
     createNewChat()
   }
 
-  const handleItemClick = (item: (typeof NAV_MAIN)[0]) => {
-    if (item.title === 'New Chat') {
+  const handleItemClick = (item: (typeof NAV_CONFIG.NAV_DATA)[number]) => {
+    if (item.NAV_TITLE === 'New Chat') {
       handleNewChat()
-    } else if (item.hasCommand) {
+    } else if (item.NAV_HAS_COMMAND) {
       setOpenCommand(true)
     }
   }
@@ -75,25 +75,25 @@ export function NavMain() {
           ATS<span className={cn(open ? 'text-gray-500' : 'text-gray-500')}>Lite</span>
         </h1>
       </div>
-      {NAV_MAIN.map(item => (
-        <SidebarMenuItem key={item.title}>
+      {NAV_CONFIG.NAV_DATA.map(item => (
+        <SidebarMenuItem key={item.NAV_TITLE}>
           <SidebarMenuButton
-            isActive={item.isActive}
+            isActive={item.NAV_IS_ACTIVE}
             className={cn(
               'p-4 h-10 gap-2 group text-xs cursor-pointer',
-              item.title === 'New Chat' && hasEmptyChat && 'text-muted-foreground',
+              item.NAV_TITLE === 'New Chat' && hasEmptyChat && 'text-muted-foreground',
             )}
             onClick={() => handleItemClick(item)}
-            title={item.title === 'New Chat' && hasEmptyChat ? 'Will switch to existing empty chat' : undefined}
+            title={item.NAV_TITLE === 'New Chat' && hasEmptyChat ? 'Will switch to existing empty chat' : undefined}
           >
             <div className="flex items-center gap-2 flex-1">
-              <item.icon className="w-4 h-4" />
+              <item.NAV_ICON className="w-4 h-4" />
               <span className={cn(open ? 'block' : 'hidden')}>
-                {item.title === 'New Chat' && hasEmptyChat ? 'Switch to Chat' : item.title}
+                {item.NAV_TITLE === 'New Chat' && hasEmptyChat ? 'Switch to Chat' : item.NAV_TITLE}
               </span>
             </div>
             <kbd className={cn(open && 'visible', 'invisible')}>
-              <span className="text-xs font-semibold text-muted-foreground">{item.shortcut}</span>
+              <span className="text-xs font-semibold text-muted-foreground">{item.NAV_SHORTCUT}</span>
             </kbd>
           </SidebarMenuButton>
         </SidebarMenuItem>

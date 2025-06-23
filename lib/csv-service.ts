@@ -1,18 +1,41 @@
 'use server'
 
-import { Candidate } from '@/types/candidate.types'
 import path from 'path'
-import Papa from 'papaparse'
 import fs from 'fs/promises'
+import { CSV_CONFIG } from '@/constants/app-config'
+import { Candidate } from '@/types/candidate.types'
+import Papa from 'papaparse'
 
-export async function LoadCandidates(): Promise<Candidate[]> {
-  const filePath = path.join(process.cwd(), 'public', 'candidates.csv')
+let cachedHeaders: string[] | null = null
+
+export async function getCsvHeaders(): Promise<string[]> {
+  if (cachedHeaders) {
+    return cachedHeaders
+  }
+
+  try {
+    const filePath = path.join(process.cwd(), 'public', CSV_CONFIG.DEFAULT_CSV_PATH)
+    const csvText = await fs.readFile(filePath, 'utf8')
+    const firstLine = csvText.split('\n')[0]
+    cachedHeaders = firstLine.split(',').map(header => header.trim())
+    return cachedHeaders
+  } catch (error) {
+    console.error('Error reading CSV headers:', error)
+    cachedHeaders = [...CSV_CONFIG.DEFAULT_HEADERS]
+    return cachedHeaders
+  }
+}
+
+export async function clearHeaderCache(): Promise<void> {
+  cachedHeaders = null
+}
+
+export async function loadCandidates(): Promise<Candidate[]> {
+  const filePath = path.join(process.cwd(), 'public', CSV_CONFIG.DEFAULT_CSV_PATH)
   const csvText = await fs.readFile(filePath, 'utf8')
   return new Promise((resolve, reject) => {
     Papa.parse<Candidate>(csvText, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: true,
+      ...CSV_CONFIG.PARSE_OPTIONS,
       complete: result => {
         const cleaned = result.data.map(
           (row: Partial<Candidate>) =>
@@ -24,14 +47,19 @@ export async function LoadCandidates(): Promise<Candidate[]> {
               timezone: row.timezone ?? '',
               years_experience: row.years_experience ?? 0,
               availability_weeks: row.availability_weeks ?? 0,
-              willing_to_relocate: row.willing_to_relocate ?? false,
+              willing_to_relocate: String(row.willing_to_relocate).toLowerCase() === 'yes',
               work_preference: row.work_preference ?? '',
               notice_period_weeks: row.notice_period_weeks ?? 0,
               desired_salary_usd: row.desired_salary_usd ?? 0,
-              open_to_contract: row.open_to_contract ?? false,
+              open_to_contract: String(row.open_to_contract).toLowerCase() === 'yes',
               remote_experience_years: row.remote_experience_years ?? 0,
               visa_status: row.visa_status ?? '',
-              citizenships: row.citizenships ?? '',
+              citizenships:
+                typeof row.citizenships === 'string'
+                  ? [row.citizenships as string]
+                  : Array.isArray(row.citizenships)
+                  ? row.citizenships
+                  : [],
               summary: row.summary ?? '',
               tags:
                 typeof row.tags === 'string'
