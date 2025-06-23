@@ -1,7 +1,3 @@
-'use server'
-
-import path from 'path'
-import fs from 'fs/promises'
 import { CSV_CONFIG } from '@/constants/app-config'
 import { Candidate } from '@/types/candidate.types'
 import Papa from 'papaparse'
@@ -14,8 +10,11 @@ export async function getCsvHeaders(): Promise<string[]> {
   }
 
   try {
-    const filePath = path.join(process.cwd(), 'data', CSV_CONFIG.DEFAULT_CSV_PATH)
-    const csvText = await fs.readFile(filePath, 'utf8')
+    const response = await fetch(`/${CSV_CONFIG.DEFAULT_CSV_PATH}`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    const csvText = await response.text()
     const firstLine = csvText.split('\n')[0]
     cachedHeaders = firstLine.split(',').map(header => header.trim())
     return cachedHeaders
@@ -31,8 +30,11 @@ export async function clearHeaderCache(): Promise<void> {
 }
 
 export async function loadCandidates(): Promise<Candidate[]> {
-  const filePath = path.join(process.cwd(), 'data', CSV_CONFIG.DEFAULT_CSV_PATH)
-  const csvText = await fs.readFile(filePath, 'utf8')
+  const response = await fetch(`/${CSV_CONFIG.DEFAULT_CSV_PATH}`)
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`)
+  }
+  const csvText = await response.text()
   return new Promise((resolve, reject) => {
     Papa.parse<Candidate>(csvText, {
       ...CSV_CONFIG.PARSE_OPTIONS,
