@@ -2,17 +2,7 @@
 
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Brain,
-  CheckCircle2,
-  Loader2,
-  Clock,
-  ChevronDown,
-  ChevronUp,
-  Filter,
-  ArrowUpDown,
-  MessageSquare,
-} from 'lucide-react'
+import { Brain, CheckCircle2, Loader2, Clock, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
 import { Candidate } from '@/types/candidate.types'
@@ -20,9 +10,9 @@ import { FilterPlan, RankingPlan } from '@/types/mcp.types'
 import ShinyText from '../animations/animated-shiny-text'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
-type ThinkingStepData = { filter?: FilterPlan; rank?: RankingPlan } | Candidate[] | string | null | undefined
+export type ThinkingStepData = { filter?: FilterPlan; rank?: RankingPlan } | Candidate[] | string | null | undefined
 
-interface ThinkingStep {
+export interface ThinkingStep {
   id: string
   title: string
   description: string
@@ -32,7 +22,7 @@ interface ThinkingStep {
   timestamp?: Date
 }
 
-interface ThinkingTimelineProps {
+export interface ThinkingTimelineProps {
   steps: ThinkingStep[]
   isComplete?: boolean
   className?: string
@@ -258,10 +248,33 @@ export function ThinkingTimeline({
   )
 }
 
-function StepDataDisplay({ step }: { step: ThinkingStep }) {
+export function StepDataDisplay({ step }: { step: ThinkingStep }) {
+  // Helper function to check if data is an array of candidates
+  const isCandidateArray = (data: any): data is Candidate[] => {
+    return Array.isArray(data) && data.length > 0 && typeof data[0] === 'object' && 'id' in data[0]
+  }
+
+  // Helper function to check if data is a filter plan object
+  const isFilterPlan = (data: any): data is { filter?: FilterPlan } => {
+    return typeof data === 'object' && data !== null && 'filter' in data
+  }
+
+  // Helper function to check if data is a ranking plan object
+  const isRankingPlan = (data: any): data is { rank?: RankingPlan } => {
+    return typeof data === 'object' && data !== null && 'rank' in data
+  }
+
+  // Safely extract data based on type
+  const filterPlan = isFilterPlan(step.data) ? step.data : undefined
+  const filteredCandidates = isCandidateArray(step.data) ? step.data : undefined
+  const filteredIds = filteredCandidates?.map(c => c.id) || []
+
+  const rankingPlan = isRankingPlan(step.data) ? step.data : undefined
+  const rankedCandidates = isCandidateArray(step.data) ? step.data : undefined
+  const rankedIds = rankedCandidates?.map(c => c.id) || []
+
   switch (step.id) {
     case 'filter-plan':
-      const filterPlan = step.data as { filter?: FilterPlan } | undefined
       return (
         <div className="text-xs">
           <div className="font-medium text-muted-foreground mb-2">Filter Plan JSON:</div>
@@ -272,8 +285,6 @@ function StepDataDisplay({ step }: { step: ThinkingStep }) {
       )
 
     case 'match-count':
-      const filteredCandidates = step.data as Candidate[] | undefined
-      const filteredIds = filteredCandidates?.map(c => c.id) || []
       return (
         <div className="text-xs space-y-2">
           <div className="text-muted-foreground font-medium">
@@ -292,7 +303,6 @@ function StepDataDisplay({ step }: { step: ThinkingStep }) {
       )
 
     case 'ranking-plan':
-      const rankingPlan = step.data as { rank?: RankingPlan } | undefined
       return (
         <div className="text-xs">
           <div className="font-medium text-muted-foreground mb-2">Ranking Plan JSON:</div>
@@ -303,8 +313,6 @@ function StepDataDisplay({ step }: { step: ThinkingStep }) {
       )
 
     case 'ranked-ids':
-      const rankedCandidates = step.data as Candidate[] | undefined
-      const rankedIds = rankedCandidates?.map(c => c.id) || []
       return (
         <div className="text-xs space-y-2">
           <div className="text-muted-foreground font-medium">
@@ -340,58 +348,4 @@ function StepDataDisplay({ step }: { step: ThinkingStep }) {
     default:
       return null
   }
-}
-
-// Helper to create granular timeline steps
-export function createTimelineSteps(
-  phase: string,
-  plan?: { filter?: FilterPlan; rank?: RankingPlan },
-  filtered?: Candidate[],
-  ranked?: Candidate[],
-  summary?: string,
-): ThinkingStep[] {
-  const steps: ThinkingStep[] = [
-    {
-      id: 'filter-plan',
-      title: 'Filter Plan',
-      description: 'Creating filter criteria',
-      icon: <Brain className="w-3 h-3" />,
-      status: phase === 'thinking' ? 'active' : plan?.filter ? 'completed' : 'pending',
-      data: { filter: plan?.filter },
-    },
-    {
-      id: 'match-count',
-      title: 'Match Count',
-      description: `${filtered?.length || 0} candidates found`,
-      icon: <Filter className="w-3 h-3" />,
-      status: phase === 'filtering' ? 'active' : filtered ? 'completed' : 'pending',
-      data: filtered,
-    },
-    {
-      id: 'ranking-plan',
-      title: 'Ranking Plan',
-      description: 'Creating ranking criteria',
-      icon: <ArrowUpDown className="w-3 h-3" />,
-      status: phase === 'ranking' && !ranked ? 'active' : plan?.rank ? 'completed' : 'pending',
-      data: { rank: plan?.rank },
-    },
-    {
-      id: 'ranked-ids',
-      title: 'Ranked Results',
-      description: 'Final candidate rankings',
-      icon: <Filter className="w-3 h-3" />,
-      status: phase === 'speaking' ? 'active' : ranked ? 'completed' : 'pending',
-      data: ranked,
-    },
-    {
-      id: 'summary',
-      title: 'Generate Summary',
-      description: 'Creating response summary',
-      icon: <MessageSquare className="w-3 h-3" />,
-      status: phase === 'speaking' ? 'active' : summary ? 'completed' : 'pending',
-      data: summary,
-    },
-  ]
-
-  return steps
 }

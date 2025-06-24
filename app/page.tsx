@@ -7,6 +7,7 @@ import ChatSuggestions from '@/components/chat/chat-suggestions'
 import ChatMessages from '@/components/chat/chat-messages'
 import { useChatStore } from '@/store/useChatStore'
 import { Candidate } from '@/types/candidate.types'
+import { CandidateSheet } from '@/components/chat/candidate-sheet'
 
 export default function Page() {
   const { messages } = useChatStore()
@@ -14,8 +15,6 @@ export default function Page() {
 
   const handleCandidateClick = (candidate: Candidate) => {
     setSelectedCandidate(candidate)
-    // TODO: Open candidate detail drawer
-    console.log('Selected candidate:', candidate)
   }
 
   const hasMessages = messages.length > 0
@@ -48,24 +47,9 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Candidate Detail Drawer */}
+      {/* Candidate Detail Sheet */}
       {selectedCandidate && (
-        <div className="fixed inset-y-0 right-0 w-96 bg-background border-l border-border shadow-xl z-50">
-          {/* Candidate detail panel - to be implemented */}
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">{selectedCandidate.full_name}</h3>
-              <button
-                onClick={() => setSelectedCandidate(null)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                ✕
-              </button>
-            </div>
-            <p className="text-sm text-muted-foreground mb-4">{selectedCandidate.title}</p>
-            <p className="text-sm text-muted-foreground">Detailed candidate view coming soon...</p>
-          </div>
-        </div>
+        <CandidateSheet selectedCandidate={selectedCandidate} setSelectedCandidate={setSelectedCandidate} />
       )}
     </div>
   )

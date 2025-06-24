@@ -160,9 +160,9 @@ export function TimelineSidebar() {
 }
 
 function TimelineStepData({ step }: { step: TimelineStep }) {
+  const planData = step.data as { filter?: FilterPlan; rank?: RankingPlan } | undefined
   switch (step.id) {
     case 'think':
-      const planData = step.data as { filter?: FilterPlan; rank?: RankingPlan } | undefined
       return (
         <div className="space-y-2">
           <div className="text-xs font-medium">Filter Plan:</div>

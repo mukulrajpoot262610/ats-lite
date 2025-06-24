@@ -4,7 +4,7 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { ChatMessage } from '@/types/chat.types'
 import MessageActions from './message-actions'
-import { ThinkingTimeline, createTimelineSteps } from './thinking-timeline'
+import { ThinkingTimeline } from './thinking-timeline'
 import { CandidateResults } from './candidate-results'
 import { useMCPStore } from '@/store/useMcpStore'
 import { Candidate } from '@/types/candidate.types'
@@ -14,6 +14,7 @@ import remarkBreaks from 'remark-breaks'
 import rehypeRaw from 'rehype-raw'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { createTimelineSteps } from './create-timeline-steps'
 
 interface MessageItemProps {
   message: ChatMessage

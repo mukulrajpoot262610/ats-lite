@@ -3,7 +3,7 @@
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea'
 import { Button } from '@/components/ui/button'
 import { MCPService } from '@/lib/mcp-service'
-import { cn } from '@/lib/utils'
+import { cn, generateUniqueId } from '@/lib/utils'
 import { useChatStore } from '@/store/useChatStore'
 import { useMCPStore } from '@/store/useMcpStore'
 import { loadCandidates } from '@/lib/csv-service'
@@ -58,7 +58,7 @@ export default function ChatInput() {
     addMessage(userMessage)
 
     // Add thinking message
-    const thinkingId = `thinking-${Date.now()}`
+    const thinkingId = generateUniqueId('thinking')
     setThinkingMessageId(thinkingId)
     addMessage({
       id: thinkingId,
@@ -80,7 +80,7 @@ export default function ChatInput() {
     try {
       // Create proper ChatMessage object for the new message
       const newMessage = {
-        id: Date.now().toString(),
+        id: generateUniqueId('msg'),
         text: message.trim(),
         sender: 'user' as const,
         timestamp: new Date(),

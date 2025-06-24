@@ -1,48 +1,141 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import FadeContent from '@/components/animations/fade-content'
 import { SUGGESTIONS_CONFIG } from '@/constants/app-config'
+import { MCPService, mcpService } from '@/lib/mcp-service'
+import { useMCPStore } from '@/store/useMcpStore'
 import { useChatStore } from '@/store/useChatStore'
-import { mcpService } from '@/lib/mcp-service'
+import { loadCandidates } from '@/lib/csv-service'
+import { generateUniqueId } from '@/lib/utils'
 
 export default function ChatSuggestions() {
-  const { addMessage, currentChatId, createNewChat, selectedModel } = useChatStore()
+  const { message, setMessage, currentChatId, createNewChat, addMessage, messages, selectedModel } = useChatStore()
+  const { setPhase, setPlan, setFiltered, setRanked, setReply } = useMCPStore()
+  const [thinkingMessageId, setThinkingMessageId] = useState<string | null>(null)
+  const [mcpService, setMcpService] = useState<MCPService | null>(null)
+
+  useEffect(() => {
+    const initializeCandidates = async () => {
+      try {
+        const candidates = await loadCandidates()
+        // Create MCP service with loaded candidates
+        const service = new MCPService(candidates)
+        setMcpService(service)
+      } catch (error) {
+        console.error('Failed to load candidates for MCP service:', error)
+      }
+    }
+    initializeCandidates()
+  }, [])
 
   const handleSuggestionClick = async (suggestionTitle: string) => {
-    // Ensure we have a current chat before adding messages
+    if (!suggestionTitle.trim() || !mcpService) return
+
     let chatId = currentChatId
     if (!chatId) {
       chatId = createNewChat()
     }
 
     // Add the user message
+    const userMessage = {
+      text: suggestionTitle.trim(),
+      sender: 'user' as const,
+    }
+    addMessage(userMessage)
+
+    // Add thinking message
+    const thinkingId = generateUniqueId('thinking')
+    setThinkingMessageId(thinkingId)
     addMessage({
-      text: suggestionTitle,
-      sender: 'user',
+      id: thinkingId,
+      text: '',
+      sender: 'thinking' as const,
+      isComplete: false,
     })
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 100))
-      const { messages } = useChatStore.getState()
+    // Clear input immediately for better UX
+    setMessage('')
 
-      const result = await mcpService.executeLoopWithSteps(messages, step => {
-        console.log('🔍 Step:', step)
+    // Reset MCP state
+    setPhase('thinking')
+    setPlan(null)
+    setFiltered([])
+    setRanked([])
+    setReply('')
+
+    try {
+      // Create proper ChatMessage object for the new message
+      const newMessage = {
+        id: generateUniqueId('msg'),
+        text: suggestionTitle.trim(),
+        sender: 'user' as const,
+        timestamp: new Date(),
+      }
+      const allMessages = [...messages, newMessage]
+
+      // Execute MCP workflow with step-by-step updates
+      const result = await mcpService.executeLoopWithSteps(allMessages, step => {
+        console.log('🔍 MCP Step:', step)
+
+        switch (step.step) {
+          case 'think':
+            setPhase('thinking')
+            setPlan(step.data)
+            break
+          case 'filter':
+            setPhase('filtering')
+            setFiltered(step.data)
+            break
+          case 'rank':
+            setPhase('ranking')
+            setRanked(step.data)
+            break
+          case 'speak':
+            setPhase('speaking')
+            setReply(step.data)
+            break
+        }
       })
 
+      // Mark thinking as complete
+      if (thinkingMessageId) {
+        // Update the thinking message to completed
+        // Note: We'd need to add an update message function to the store for this
+        // For now, we'll just set the phase to idle
+      }
+      setPhase('idle')
+
+      // Add candidate results message if we have results
+      const { ranked } = useMCPStore.getState()
+      if (ranked && ranked.length > 0) {
+        addMessage({
+          text: 'Here are the candidates that match your request:',
+          sender: 'system',
+          data: {
+            type: 'candidate-results',
+            candidates: ranked,
+          },
+        })
+      }
+
+      // Add the final response
       addMessage({
         text: result,
         sender: 'assistant',
         model: selectedModel.name,
       })
     } catch (error) {
-      console.error('Error calling think API:', error)
+      console.error('Error executing MCP workflow:', error)
+      setPhase('idle')
 
       addMessage({
-        text: 'I apologize, but I encountered an error while processing your request. Please try again or check your connection.',
+        text: 'Sorry, I encountered an error while processing your request. Please try again.',
         sender: 'assistant',
         model: selectedModel.name,
       })
+    } finally {
+      setThinkingMessageId(null)
     }
   }
 

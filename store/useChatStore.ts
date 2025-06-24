@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Chat, ChatMessage, ChatStore, ModelConfig } from '@/types/chat.types'
 import { LLM_CONFIG } from '@/constants/app-config'
+import { generateUniqueId } from '@/lib/utils'
 
 const generateChatTitle = (firstMessage?: string): string => {
   if (!firstMessage) return 'New Chat'
@@ -41,7 +42,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
 
     // No empty chat exists, create a new one
-    const newChatId = Date.now().toString()
+    const newChatId = generateUniqueId('chat')
     const newChat: Chat = {
       id: newChatId,
       title: 'New Chat',
@@ -98,7 +99,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     const newMessage: ChatMessage = {
       ...message,
-      id: message.id || Date.now().toString(),
+      id: message.id || generateUniqueId('msg'),
       timestamp: new Date(),
     }
 
