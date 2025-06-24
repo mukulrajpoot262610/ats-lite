@@ -1,14 +1,8 @@
 'use client'
 
-import { Link, MoreHorizontal, Trash2, MessageSquare } from 'lucide-react'
+import { MoreHorizontal, Trash2, MessageSquare } from 'lucide-react'
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -20,6 +14,7 @@ import {
 } from '@/components/ui/sidebar'
 import { useChatStore } from '@/store/useChatStore'
 import { cn, formatChatTime } from '@/lib/utils'
+import { toast } from 'sonner'
 
 export function NavChats() {
   const { isMobile, open } = useSidebar()
@@ -32,6 +27,7 @@ export function NavChats() {
   const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
     e.stopPropagation()
     deleteChat(chatId)
+    toast.success('Chat deleted')
   }
 
   return (
@@ -83,13 +79,8 @@ export function NavChats() {
                     side={isMobile ? 'bottom' : 'right'}
                     align={isMobile ? 'end' : 'start'}
                   >
-                    <DropdownMenuItem className="text-xs p-2">
-                      <Link className="text-muted-foreground w-4 h-4" />
-                      <span>Copy Link</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      className="text-xs p-2 text-red-600 focus:text-red-600 focus:bg-red-50"
+                      className="text-xs p-3 text-red-600 focus:text-red-600 focus:bg-red-50"
                       onClick={e => handleDeleteChat(chat.id, e)}
                     >
                       <Trash2 className="text-red-500 w-4 h-4" />

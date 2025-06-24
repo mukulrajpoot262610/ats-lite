@@ -3,7 +3,7 @@
  * This file centralizes all configurable values to avoid hardcoding
  */
 
-import { BrainIcon, FileTextIcon, MailIcon, PencilIcon, Search, Sparkles } from 'lucide-react'
+import { BrainIcon, FileTextIcon, MailIcon, PencilIcon, Sparkles } from 'lucide-react'
 
 /**
  * LLM Configuration
@@ -105,14 +105,6 @@ export const NAV_CONFIG = {
       NAV_IS_ACTIVE: true,
       NAV_SHORTCUT: '⌘ + M',
       NAV_HAS_COMMAND: false,
-    },
-    {
-      NAV_TITLE: 'Search',
-      NAV_URL: '#',
-      NAV_ICON: Search,
-      NAV_SHORTCUT: '⌘ + K',
-      NAV_HAS_COMMAND: true,
-      NAV_IS_ACTIVE: false,
     },
   ],
 } as const
