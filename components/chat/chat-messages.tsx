@@ -12,7 +12,8 @@ interface ChatMessagesProps {
 }
 
 const ChatMessages = ({ onCandidateClick }: ChatMessagesProps) => {
-  const { messages } = useChatStore()
+  const { getCurrentMessages } = useChatStore()
+  const messages = getCurrentMessages()
 
   return (
     <FadeContent duration={300} className="flex-1 flex flex-col justify-center items-center min-h-0">

@@ -11,7 +11,8 @@ import ChatMessages from '@/components/chat/chat-messages'
 import CandidateSheet from '@/components/candidate/candidate-sheet'
 
 export default function Page() {
-  const { messages } = useChatStore()
+  const { getCurrentMessages } = useChatStore()
+  const messages = getCurrentMessages()
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null)
 
   const handleCandidateClick = (candidate: Candidate) => {

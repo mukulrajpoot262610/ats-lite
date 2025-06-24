@@ -198,10 +198,12 @@ export interface ChatStore {
   chats: Chat[]
   /** ID of the currently active chat */
   currentChatId: string | null
-  /** Messages in the current chat */
-  messages: ChatMessage[]
   /** Currently selected AI model */
   selectedModel: ModelConfig
+
+  // Computed getter for current messages (replaces duplicated messages array)
+  /** Get messages for the current chat */
+  getCurrentMessages: () => ChatMessage[]
 
   // Input actions
   /** Update the current input message */

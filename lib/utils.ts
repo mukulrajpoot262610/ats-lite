@@ -14,9 +14,10 @@ export function generateUniqueId(prefix?: string): string {
   return prefix ? `${prefix}-${uniqueId}` : uniqueId
 }
 
-export function formatChatTime(date: Date) {
+export function formatChatTime(date: Date | string) {
   const now = new Date()
-  const diffTime = Math.abs(now.getTime() - date.getTime())
+  const dateObj = date instanceof Date ? date : new Date(date)
+  const diffTime = Math.abs(now.getTime() - dateObj.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   const diffHours = Math.ceil(diffTime / (1000 * 60 * 60))
 
@@ -33,7 +34,7 @@ export function formatChatTime(date: Date) {
   } else if (diffDays < 365) {
     return `${diffDays}w ago`
   } else {
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    return dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   }
 }
 

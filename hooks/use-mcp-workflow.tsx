@@ -5,7 +5,7 @@ import { useMCPStore } from '@/store/useMcpStore'
 import { generateUniqueId } from '@/lib/utils'
 
 export function useMCPWorkflow() {
-  const { currentChatId, createNewChat, addMessage, messages, selectedModel, updateMessage } = useChatStore()
+  const { currentChatId, createNewChat, addMessage, getCurrentMessages, selectedModel, updateMessage } = useChatStore()
   const { setPhase, setPlan, setFiltered, setRanked, setReply } = useMCPStore()
 
   const executeWorkflow = useCallback(
@@ -48,7 +48,7 @@ export function useMCPWorkflow() {
           sender: 'user' as const,
           timestamp: new Date(),
         }
-        const allMessages = [...messages, newMessage]
+        const allMessages = [...getCurrentMessages(), newMessage]
 
         // Execute MCP workflow with step-by-step updates
         const result = await mcpService.executeLoopWithSteps(allMessages, step => {
@@ -223,7 +223,7 @@ export function useMCPWorkflow() {
       currentChatId,
       createNewChat,
       addMessage,
-      messages,
+      getCurrentMessages,
       selectedModel,
       updateMessage,
       setPhase,
