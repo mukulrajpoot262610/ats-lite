@@ -7,9 +7,7 @@ import { cn } from '@/lib/utils'
 import { Candidate, FilterPlan, RankingPlan } from '@/types'
 import ShinyText from '../animations/animated-shiny-text'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { useTimelineState } from '@/hooks/use-timeline-state'
-import { useTimelineProgression } from '@/hooks/use-timeline-progression'
-import { useTimelineStatus } from '@/hooks/use-timeline-status'
+import { useTimeline } from '@/hooks/use-timeline'
 
 export type ThinkingStepData = { filter?: FilterPlan; rank?: RankingPlan } | Candidate[] | string | null | undefined
 
@@ -41,29 +39,19 @@ const ThinkingTimeline = ({
   const {
     expandedSteps,
     isCollapsed,
-    visibleStepsCount,
     isWaiting,
     activeStepId,
-    setVisibleStepsCount,
-    setIsWaiting,
-    setActiveStepId,
+    visibleSteps,
     toggleStep,
     toggleCollapsed,
-  } = useTimelineState(defaultCollapsed, autoProgress, steps.length)
-
-  const { getStatusIcon, getStepColor } = useTimelineStatus()
-
-  useTimelineProgression({
+    getStatusIcon,
+    getStepColor,
+  } = useTimeline({
     steps,
+    defaultCollapsed,
     autoProgress,
     isComplete,
-    visibleStepsCount,
-    setVisibleStepsCount,
-    setIsWaiting,
-    setActiveStepId,
   })
-
-  const visibleSteps = steps.slice(0, visibleStepsCount)
 
   return (
     <motion.div
