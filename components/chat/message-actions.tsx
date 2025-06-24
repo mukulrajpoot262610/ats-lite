@@ -5,18 +5,19 @@ import { Button } from '../ui/button'
 import { CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import { ChatMessage } from '@/types/chat.types'
 
 interface MessageActionsProps {
-  messageText: string
+  message: ChatMessage
 }
 
-export default function MessageActions({ messageText }: MessageActionsProps) {
+export default function MessageActions({ message }: MessageActionsProps) {
   const [isCopied, setIsCopied] = useState(false)
   const [isThumbsUp, setIsThumbsUp] = useState(false)
   const [isThumbsDown, setIsThumbsDown] = useState(false)
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(messageText)
+    navigator.clipboard.writeText(message.text)
     toast.success('Copied to clipboard')
     setIsCopied(true)
     setTimeout(() => {

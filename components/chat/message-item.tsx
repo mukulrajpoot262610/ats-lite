@@ -127,7 +127,7 @@ export default function MessageItem({ message, onCandidateClick }: MessageItemPr
         )}
 
         {/* Message actions */}
-        {message.sender === 'assistant' && <MessageActions messageId={message.id} messageText={message.text} />}
+        {message.sender === 'assistant' && <MessageActions message={message as ChatMessage} />}
       </div>
     </div>
   )
