@@ -1,8 +1,5 @@
-import { ChatMessage } from '@/types/chat.types'
-import { CandidateStats, FilterPlan, RankingPlan } from '@/types/mcp.types'
+import { ChatMessage, CandidateStats, FilterPlan, RankingPlan, OpenAIChatMessage, OpenAIChatRequest } from '@/types'
 import { ApiService, apiService } from './api-service'
-import { OpenAIChatMessage } from '@/types/openai.types'
-import { OpenAIChatRequest } from '@/types/api.types'
 import { LLM_CONFIG } from '@/constants/app-config'
 import { getCsvHeaders } from './csv-service'
 

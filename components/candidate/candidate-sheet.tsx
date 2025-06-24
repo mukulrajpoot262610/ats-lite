@@ -1,5 +1,5 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { Candidate } from '@/types/candidate.types'
+import { Candidate } from '@/types'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
@@ -22,13 +22,13 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatSalary, formatDate } from '@/lib/utils'
 
-export function CandidateSheet({
+const CandidateSheet = ({
   selectedCandidate,
   setSelectedCandidate,
 }: {
   selectedCandidate: Candidate
   setSelectedCandidate: (candidate: Candidate | null) => void
-}) {
+}) => {
   return (
     <Sheet open={!!selectedCandidate} onOpenChange={() => setSelectedCandidate(null)}>
       <SheetContent side="right" style={{ maxWidth: '40vw' }}>
@@ -268,3 +268,4 @@ export function CandidateSheet({
     </Sheet>
   )
 }
+export default CandidateSheet

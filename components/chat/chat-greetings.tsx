@@ -3,7 +3,7 @@
 import React from 'react'
 import FadeContent from '@/components/animations/fade-content'
 
-export default function ChatGreetings() {
+const ChatGreetings = () => {
   return (
     <FadeContent duration={300} className="w-full">
       <div className="text-left mb-8 w-full tracking-tighter leading-snug">
@@ -16,3 +16,4 @@ export default function ChatGreetings() {
     </FadeContent>
   )
 }
+export default ChatGreetings

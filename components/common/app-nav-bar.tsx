@@ -1,12 +1,12 @@
 'use client'
 
 import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
-import { NavActions } from './nav-actions'
+import AppNavBarActions from './app-nav-bar-actions'
 import { Badge } from '../ui/badge'
 import { Separator } from '../ui/separator'
 import { cn } from '@/lib/utils'
 
-export function NavHeader() {
+const AppNavBar = () => {
   const { open } = useSidebar()
 
   return (
@@ -25,8 +25,9 @@ export function NavHeader() {
         </Badge>
       </div>
       <div className="ml-auto px-3">
-        <NavActions />
+        <AppNavBarActions />
       </div>
     </header>
   )
 }
+export default AppNavBar

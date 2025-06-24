@@ -57,3 +57,10 @@ export const formatDate = (dateString: string) => {
     day: 'numeric',
   })
 }
+
+export const generateChatTitle = (firstMessage?: string): string => {
+  if (!firstMessage) return 'New Chat'
+
+  const words = firstMessage.split(' ').slice(0, 6)
+  return words.join(' ') + (firstMessage.split(' ').length > 6 ? '...' : '')
+}

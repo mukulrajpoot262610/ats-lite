@@ -2,18 +2,19 @@
 
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Candidate } from '@/types/candidate.types'
+import { Candidate } from '@/types'
 import { MapPin, DollarSign, User, Building, ChevronDown, ChevronUp, ExternalLink, Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { formatSalary, getExperienceColor } from '@/lib/utils'
 
 interface CandidateResultsProps {
   candidates: Candidate[]
   onCandidateClick?: (candidate: Candidate) => void
 }
 
-export function CandidateResults({ candidates, onCandidateClick }: CandidateResultsProps) {
+const CandidateResults = ({ candidates, onCandidateClick }: CandidateResultsProps) => {
   const [expandedCandidates, setExpandedCandidates] = useState<Set<string>>(new Set())
   const [showAll, setShowAll] = useState(false)
 
@@ -25,19 +26,6 @@ export function CandidateResults({ candidates, onCandidateClick }: CandidateResu
       newExpanded.add(candidateId)
     }
     setExpandedCandidates(newExpanded)
-  }
-
-  const formatSalary = (salary?: number) => {
-    if (!salary) return 'Not specified'
-    return `$${salary.toLocaleString()}`
-  }
-
-  const getExperienceColor = (years: number) => {
-    if (years >= 15) return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-    if (years >= 10) return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-    if (years >= 5) return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    if (years >= 2) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-    return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
   }
 
   const displayedCandidates = showAll ? candidates : candidates.slice(0, 5)
@@ -247,3 +235,4 @@ export function CandidateResults({ candidates, onCandidateClick }: CandidateResu
     </motion.div>
   )
 }
+export default CandidateResults

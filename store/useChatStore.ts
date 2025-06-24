@@ -1,34 +1,21 @@
 import { create } from 'zustand'
-import { Chat, ChatMessage, ChatStore, ModelConfig } from '@/types/chat.types'
+import { Chat, ChatMessage, ChatStore, ModelConfig } from '@/types'
 import { LLM_CONFIG } from '@/constants/app-config'
-import { generateUniqueId } from '@/lib/utils'
-
-const generateChatTitle = (firstMessage?: string): string => {
-  if (!firstMessage) return 'New Chat'
-
-  const words = firstMessage.split(' ').slice(0, 6)
-  return words.join(' ') + (firstMessage.split(' ').length > 6 ? '...' : '')
-}
+import { generateChatTitle, generateUniqueId } from '@/lib/utils'
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   message: '',
   chats: [],
   currentChatId: null,
   messages: [],
-
   selectedModel: {
     provider: LLM_CONFIG.DEFAULT_PROVIDER,
     model: LLM_CONFIG.DEFAULT_MODEL,
     name: LLM_CONFIG.DEFAULT_MODEL,
   },
-
   setMessage: (message: string) => set({ message }),
   setSuggestion: (suggestion: string) => set({ message: suggestion }),
-
-  // Model actions
   setSelectedModel: (model: ModelConfig) => set({ selectedModel: model }),
-
-  // Chat actions
   createNewChat: () => {
     const state = get()
 
@@ -62,7 +49,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     return newChatId
   },
-
   switchToChat: (chatId: string) => {
     const state = get()
     const targetChat = state.chats.find(chat => chat.id === chatId)
@@ -73,7 +59,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       message: '',
     })
   },
-
   deleteChat: (chatId: string) => {
     set(state => {
       const updatedChats = state.chats.filter(chat => chat.id !== chatId)
@@ -89,7 +74,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
     })
   },
-
   addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'> & { id?: string }) => {
     const currentChatId = get().currentChatId
     if (!currentChatId) {
@@ -127,13 +111,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
     })
   },
-
   updateChatTitle: (chatId: string, title: string) => {
     set(state => ({
       chats: state.chats.map(chat => (chat.id === chatId ? { ...chat, title, updatedAt: new Date() } : chat)),
     }))
   },
-
   updateMessage: (messageId: string, updates: Partial<ChatMessage>) => {
     const currentChatId = get().currentChatId
     if (!currentChatId) {

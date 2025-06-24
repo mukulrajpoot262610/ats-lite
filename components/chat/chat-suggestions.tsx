@@ -1,246 +1,25 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import FadeContent from '@/components/animations/fade-content'
 import { SUGGESTIONS_CONFIG } from '@/constants/app-config'
-import { MCPService } from '@/lib/mcp-service'
-import { useMCPStore } from '@/store/useMcpStore'
+import { useMCPService } from '@/hooks/use-mcp-service'
+import { useMCPWorkflow } from '@/hooks/use-mcp-workflow'
 import { useChatStore } from '@/store/useChatStore'
-import { loadCandidates } from '@/lib/csv-service'
-import { generateUniqueId } from '@/lib/utils'
 
-export default function ChatSuggestions() {
-  const { setMessage, currentChatId, createNewChat, addMessage, messages, selectedModel, updateMessage } =
-    useChatStore()
-  const { setPhase, setPlan, setFiltered, setRanked, setReply } = useMCPStore()
-  const [mcpService, setMcpService] = useState<MCPService | null>(null)
-
-  useEffect(() => {
-    const initializeCandidates = async () => {
-      try {
-        const candidates = await loadCandidates()
-        // Create MCP service with loaded candidates
-        const service = new MCPService(candidates)
-        setMcpService(service)
-      } catch (error) {
-        console.error('Failed to load candidates for MCP service:', error)
-      }
-    }
-    initializeCandidates()
-  }, [])
+const ChatSuggestions = () => {
+  const { setMessage } = useChatStore()
+  const { mcpService, error } = useMCPService()
+  const { executeWorkflow } = useMCPWorkflow()
 
   const handleSuggestionClick = async (suggestionTitle: string) => {
     if (!suggestionTitle.trim() || !mcpService) return
-
-    let chatId = currentChatId
-    if (!chatId) {
-      chatId = createNewChat()
-    }
-
-    // Add the user message
-    const userMessage = {
-      text: suggestionTitle.trim(),
-      sender: 'user' as const,
-    }
-    addMessage(userMessage)
-
-    // Add thinking message
-    const thinkingId = generateUniqueId('thinking')
-    addMessage({
-      id: thinkingId,
-      text: '',
-      sender: 'thinking' as const,
-      isComplete: false,
-    })
-
-    // Clear input immediately for better UX
     setMessage('')
+    await executeWorkflow(suggestionTitle, mcpService)
+  }
 
-    // Reset MCP state
-    setPhase('thinking')
-    setPlan(null)
-    setFiltered([])
-    setRanked([])
-    setReply('')
-
-    try {
-      // Create proper ChatMessage object for the new message
-      const newMessage = {
-        id: generateUniqueId('msg'),
-        text: suggestionTitle.trim(),
-        sender: 'user' as const,
-        timestamp: new Date(),
-      }
-      const allMessages = [...messages, newMessage]
-
-      // Execute MCP workflow with step-by-step updates
-      const result = await mcpService.executeLoopWithSteps(allMessages, step => {
-        console.log('🔍 MCP Step:', step)
-
-        switch (step.step) {
-          case 'think':
-            setPhase('thinking')
-            setPlan(step.data)
-            // Update thinking message with current state
-            if (thinkingId) {
-              const { filtered, ranked, reply } = useMCPStore.getState()
-              updateMessage(thinkingId, {
-                text: '',
-                sender: 'thinking' as const,
-                isComplete: false,
-                data: {
-                  thinkingData: {
-                    phase: 'thinking',
-                    plan: step.data,
-                    filtered,
-                    ranked,
-                    reply,
-                  },
-                },
-              })
-            }
-            break
-          case 'filter':
-            setPhase('filtering')
-            setFiltered(step.data)
-            // Update thinking message with current state
-            if (thinkingId) {
-              const { plan, ranked, reply } = useMCPStore.getState()
-              updateMessage(thinkingId, {
-                text: '',
-                sender: 'thinking' as const,
-                isComplete: false,
-                data: {
-                  thinkingData: {
-                    phase: 'filtering',
-                    plan,
-                    filtered: step.data,
-                    ranked,
-                    reply,
-                  },
-                },
-              })
-            }
-            // Check if no candidates found and handle early exit
-            if (step.data.length === 0) {
-              setPhase('idle')
-              // Mark thinking as complete with final data
-              if (thinkingId) {
-                const { plan, reply } = useMCPStore.getState()
-                updateMessage(thinkingId, {
-                  text: '',
-                  sender: 'thinking' as const,
-                  isComplete: true,
-                  data: {
-                    thinkingData: {
-                      phase: 'idle',
-                      plan,
-                      filtered: step.data,
-                      ranked: [],
-                      reply,
-                    },
-                  },
-                })
-              }
-              return
-            }
-            break
-          case 'rank':
-            setPhase('ranking')
-            setRanked(step.data)
-            // Update thinking message with current state
-            if (thinkingId) {
-              const { plan, filtered, reply } = useMCPStore.getState()
-              updateMessage(thinkingId, {
-                text: '',
-                sender: 'thinking' as const,
-                isComplete: false,
-                data: {
-                  thinkingData: {
-                    phase: 'ranking',
-                    plan,
-                    filtered,
-                    ranked: step.data,
-                    reply,
-                  },
-                },
-              })
-            }
-            break
-          case 'speak':
-            setPhase('speaking')
-            setReply(step.data)
-            // Update thinking message with current state
-            if (thinkingId) {
-              const { plan, filtered, ranked } = useMCPStore.getState()
-              updateMessage(thinkingId, {
-                text: '',
-                sender: 'thinking' as const,
-                isComplete: false,
-                data: {
-                  thinkingData: {
-                    phase: 'speaking',
-                    plan,
-                    filtered,
-                    ranked,
-                    reply: step.data,
-                  },
-                },
-              })
-            }
-            break
-        }
-      })
-
-      // Mark thinking as complete with final state
-      if (thinkingId) {
-        const { plan, filtered, ranked, reply } = useMCPStore.getState()
-        updateMessage(thinkingId, {
-          text: '',
-          sender: 'thinking' as const,
-          isComplete: true,
-          data: {
-            thinkingData: {
-              phase: 'idle',
-              plan,
-              filtered,
-              ranked,
-              reply,
-            },
-          },
-        })
-      }
-      setPhase('idle')
-
-      // Add candidate results message if we have results
-      const { ranked } = useMCPStore.getState()
-      if (ranked && ranked.length > 0) {
-        addMessage({
-          text: '',
-          sender: 'system',
-          data: {
-            type: 'candidate-results',
-            candidates: ranked,
-          },
-        })
-      }
-
-      // Add the final response
-      addMessage({
-        text: result,
-        sender: 'assistant',
-        model: selectedModel.name,
-      })
-    } catch (error) {
-      console.error('Error executing MCP workflow:', error)
-      setPhase('idle')
-
-      addMessage({
-        text: 'Sorry, I encountered an error while processing your request. Please try again.',
-        sender: 'assistant',
-        model: selectedModel.name,
-      })
-    }
+  if (error) {
+    console.error('Error loading MCP service:', error)
   }
 
   return (
@@ -264,3 +43,4 @@ export default function ChatSuggestions() {
     </FadeContent>
   )
 }
+export default ChatSuggestions

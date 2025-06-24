@@ -1,4 +1,4 @@
-import { APIError } from '@/types/api.types'
+import { APIError } from '@/types'
 
 export class ApiService {
   private baseURL: string

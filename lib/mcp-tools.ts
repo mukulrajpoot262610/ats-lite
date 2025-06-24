@@ -1,11 +1,10 @@
-import { Candidate } from '@/types/candidate.types'
-import { FilterPlan, RankingPlan, CandidateStats } from '@/types/mcp.types'
+import { Candidate, FilterPlan, RankingPlan, CandidateStats } from '@/types'
 import { CANDIDATE_CONFIG } from '@/constants/app-config'
 
 /**
  * Normalize candidate values for comparison
  */
-function normalize(val: unknown): string {
+const normalize = (val: unknown): string => {
   if (Array.isArray(val)) return val.join(' ').toLowerCase()
   return String(val ?? '').toLowerCase()
 }
@@ -13,7 +12,7 @@ function normalize(val: unknown): string {
 /**
  * Check if a numeric value matches a filter with operators
  */
-function matchesNumericFilter(candidateVal: number, filterVal: string): boolean {
+const matchesNumericFilter = (candidateVal: number, filterVal: string): boolean => {
   if (filterVal.startsWith('>=')) return candidateVal >= parseFloat(filterVal.slice(2))
   if (filterVal.startsWith('<=')) return candidateVal <= parseFloat(filterVal.slice(2))
   if (filterVal.startsWith('>')) return candidateVal > parseFloat(filterVal.slice(1))
@@ -24,7 +23,7 @@ function matchesNumericFilter(candidateVal: number, filterVal: string): boolean 
 /**
  * Filter candidates based on include/exclude criteria
  */
-export function filterCandidates(plan: FilterPlan, allCandidates: Candidate[]): Candidate[] {
+const filterCandidates = (plan: FilterPlan, allCandidates: Candidate[]): Candidate[] => {
   return allCandidates.filter(candidate => {
     const include = plan.include || {}
     const exclude = plan.exclude || {}
@@ -60,7 +59,7 @@ export function filterCandidates(plan: FilterPlan, allCandidates: Candidate[]): 
 /**
  * Rank candidates based on primary field and tie-breakers
  */
-export function rankCandidates(plan: RankingPlan, candidates: Candidate[]): Candidate[] {
+const rankCandidates = (plan: RankingPlan, candidates: Candidate[]): Candidate[] => {
   const order = plan.order || CANDIDATE_CONFIG.DEFAULT_SORT_ORDER
 
   return [...candidates].sort((a, b) => {
@@ -105,7 +104,7 @@ export function rankCandidates(plan: RankingPlan, candidates: Candidate[]): Cand
 /**
  * Generate aggregate statistics for candidates
  */
-export function aggregateStats(candidates: Candidate[]): CandidateStats {
+const aggregateStats = (candidates: Candidate[]): CandidateStats => {
   if (candidates.length === 0) {
     return {
       count: 0,
@@ -143,3 +142,5 @@ export function aggregateStats(candidates: Candidate[]): CandidateStats {
     top_skills,
   }
 }
+
+export { filterCandidates, rankCandidates, aggregateStats }

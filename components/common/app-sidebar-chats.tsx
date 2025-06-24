@@ -16,7 +16,7 @@ import { useChatStore } from '@/store/useChatStore'
 import { cn, formatChatTime } from '@/lib/utils'
 import { toast } from 'sonner'
 
-export function NavChats() {
+const AppSidebarChats = () => {
   const { isMobile, open } = useSidebar()
   const { chats, currentChatId, switchToChat, deleteChat } = useChatStore()
 
@@ -96,3 +96,4 @@ export function NavChats() {
     </SidebarGroup>
   )
 }
+export default AppSidebarChats

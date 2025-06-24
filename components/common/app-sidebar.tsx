@@ -1,24 +1,25 @@
 import * as React from 'react'
 
-import { NavChats } from '@/components/common/nav-chats'
-import { Sidebar, SidebarContent, SidebarHeader, SidebarRail, SidebarSeparator } from '@/components/ui/sidebar'
-import { NavMain } from './nav-main'
-import { NavUser } from './nav-user'
+import AppSidebarChats from '@/components/common/app-sidebar-chats'
+import AppSidebarUser from '@/components/common/app-sidebar-user'
+
+import { Sidebar, SidebarContent, SidebarHeader, SidebarSeparator } from '@/components/ui/sidebar'
+import { AppSidebarHeader } from '@/components/common/app-sidebar-header'
 import { Separator } from '../ui/separator'
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+const AppSidebar = ({ ...props }: React.ComponentProps<typeof Sidebar>) => {
   return (
     <Sidebar className="border-r-0" {...props} collapsible="icon">
       <SidebarHeader>
-        <NavMain />
+        <AppSidebarHeader />
       </SidebarHeader>
       <SidebarSeparator />
       <SidebarContent>
-        <NavChats />
+        <AppSidebarChats />
         <Separator className="mt-auto" />
-        <NavUser />
+        <AppSidebarUser />
       </SidebarContent>
-      <SidebarRail />
     </Sidebar>
   )
 }
+export default AppSidebar

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { openai, DEFAULT_TEMPERATURE } from './openai-client'
-import type { OpenAIChatMessage } from '@/types/openai.types'
+import type { OpenAIChatMessage } from '@/types'
 
 export async function createNonStreamingResponse(messages: OpenAIChatMessage[], model: string): Promise<NextResponse> {
   const completion = await openai.chat.completions.create({

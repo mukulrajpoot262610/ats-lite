@@ -9,7 +9,7 @@ import { ModeToggle } from './theme-toggle'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
-export function NavActions() {
+const AppNavBarActions = () => {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const { setTheme, theme } = useTheme()
 
@@ -92,3 +92,4 @@ export function NavActions() {
     </div>
   )
 }
+export default AppNavBarActions

@@ -2,13 +2,14 @@
 
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, CheckCircle2, Loader2, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { Brain, CheckCircle2, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useState, useEffect } from 'react'
-import { Candidate } from '@/types/candidate.types'
-import { FilterPlan, RankingPlan } from '@/types/mcp.types'
+import { Candidate, FilterPlan, RankingPlan } from '@/types'
 import ShinyText from '../animations/animated-shiny-text'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { useTimelineState } from '@/hooks/use-timeline-state'
+import { useTimelineProgression } from '@/hooks/use-timeline-progression'
+import { useTimelineStatus } from '@/hooks/use-timeline-status'
 
 export type ThinkingStepData = { filter?: FilterPlan; rank?: RankingPlan } | Candidate[] | string | null | undefined
 
@@ -30,101 +31,37 @@ export interface ThinkingTimelineProps {
   autoProgress?: boolean
 }
 
-export function ThinkingTimeline({
+const ThinkingTimeline = ({
   steps,
   isComplete = false,
   className,
   defaultCollapsed = false,
   autoProgress = true,
-}: ThinkingTimelineProps) {
-  const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set())
-  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed)
-  const [visibleStepsCount, setVisibleStepsCount] = useState(autoProgress ? 1 : steps.length)
-  const [isWaiting, setIsWaiting] = useState(false)
-  const [activeStepId, setActiveStepId] = useState<string | null>(null)
+}: ThinkingTimelineProps) => {
+  const {
+    expandedSteps,
+    isCollapsed,
+    visibleStepsCount,
+    isWaiting,
+    activeStepId,
+    setVisibleStepsCount,
+    setIsWaiting,
+    setActiveStepId,
+    toggleStep,
+    toggleCollapsed,
+  } = useTimelineState(defaultCollapsed, autoProgress, steps.length)
 
-  // Auto-progress through steps with 2-second delay and data validation
-  useEffect(() => {
-    if (!autoProgress || isComplete) return
+  const { getStatusIcon, getStepColor } = useTimelineStatus()
 
-    const timer = setInterval(() => {
-      setVisibleStepsCount(prev => {
-        // Check if current step has data before proceeding
-        if (prev > 0 && prev <= steps.length) {
-          const currentStep = steps[prev - 1]
-          if (!currentStep?.data) {
-            // Break progression if current step has no data
-            clearInterval(timer)
-            setIsWaiting(false)
-            setActiveStepId(null)
-            return prev
-          }
-        }
-
-        const next = prev + 1
-        if (next >= steps.length) {
-          clearInterval(timer)
-          setIsWaiting(false)
-          setActiveStepId(null)
-          return steps.length
-        }
-
-        // Show waiting state and mark next step as active
-        setIsWaiting(true)
-        if (next <= steps.length) {
-          setActiveStepId(steps[next - 1]?.id || null)
-        }
-
-        setTimeout(() => {
-          setIsWaiting(false)
-          setActiveStepId(null)
-        }, 2000)
-
-        return next
-      })
-    }, 2000)
-
-    return () => clearInterval(timer)
-  }, [steps, autoProgress, isComplete])
-
-  // Show all steps immediately when complete
-  useEffect(() => {
-    if (isComplete) {
-      setVisibleStepsCount(steps.length)
-    }
-  }, [isComplete, steps.length])
-
-  const toggleStep = (stepId: string) => {
-    const newExpanded = new Set(expandedSteps)
-    if (newExpanded.has(stepId)) {
-      newExpanded.delete(stepId)
-    } else {
-      newExpanded.add(stepId)
-    }
-    setExpandedSteps(newExpanded)
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active':
-        return <Loader2 className="w-3 h-3 animate-spin text-blue-500" />
-      case 'completed':
-        return <CheckCircle2 className="w-3 h-3 text-green-500" />
-      default:
-        return <Clock className="w-3 h-3 text-muted-foreground" />
-    }
-  }
-
-  const getStepColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'text-blue-600 dark:text-blue-400'
-      case 'completed':
-        return 'text-green-600 dark:text-green-400'
-      default:
-        return 'text-muted-foreground'
-    }
-  }
+  useTimelineProgression({
+    steps,
+    autoProgress,
+    isComplete,
+    visibleStepsCount,
+    setVisibleStepsCount,
+    setIsWaiting,
+    setActiveStepId,
+  })
 
   const visibleSteps = steps.slice(0, visibleStepsCount)
 
@@ -134,7 +71,7 @@ export function ThinkingTimeline({
       animate={{ opacity: 1, y: 0 }}
       className={cn('rounded-lg p-4 my-2 w-full', 'backdrop-blur-sm', className)}
     >
-      <Collapsible open={!isCollapsed} onOpenChange={open => setIsCollapsed(!open)}>
+      <Collapsible open={!isCollapsed} onOpenChange={toggleCollapsed}>
         <CollapsibleTrigger className="flex items-center gap-2 mb-3 w-full hover:opacity-80 transition-opacity">
           <Brain className="w-4 h-4 text-primary" />
           {isComplete ? (
@@ -248,23 +185,19 @@ export function ThinkingTimeline({
   )
 }
 
-export function StepDataDisplay({ step }: { step: ThinkingStep }) {
-  // Helper function to check if data is an array of candidates
+const StepDataDisplay = ({ step }: { step: ThinkingStep }) => {
   const isCandidateArray = (data: ThinkingStepData): data is Candidate[] => {
     return Array.isArray(data) && data.length > 0 && typeof data[0] === 'object' && 'id' in data[0]
   }
 
-  // Helper function to check if data is a filter plan object
   const isFilterPlan = (data: ThinkingStepData): data is { filter?: FilterPlan } => {
     return typeof data === 'object' && data !== null && 'filter' in data
   }
 
-  // Helper function to check if data is a ranking plan object
   const isRankingPlan = (data: ThinkingStepData): data is { rank?: RankingPlan } => {
     return typeof data === 'object' && data !== null && 'rank' in data
   }
 
-  // Safely extract data based on type
   const filterPlan = isFilterPlan(step.data) ? step.data : undefined
   const filteredCandidates = isCandidateArray(step.data) ? step.data : undefined
   const filteredIds = filteredCandidates?.map(c => c.id) || []
@@ -343,3 +276,5 @@ export function StepDataDisplay({ step }: { step: ThinkingStep }) {
       return null
   }
 }
+
+export default ThinkingTimeline

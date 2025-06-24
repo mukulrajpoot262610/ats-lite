@@ -5,13 +5,13 @@ import { Button } from '../ui/button'
 import { CopyIcon, ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
-import { ChatMessage } from '@/types/chat.types'
+import { ChatMessage } from '@/types'
 
-interface MessageActionsProps {
+interface ChatMessageActionsProps {
   message: ChatMessage
 }
 
-export default function MessageActions({ message }: MessageActionsProps) {
+const ChatMessageActions = ({ message }: ChatMessageActionsProps) => {
   const [isCopied, setIsCopied] = useState(false)
   const [isThumbsUp, setIsThumbsUp] = useState(false)
   const [isThumbsDown, setIsThumbsDown] = useState(false)
@@ -89,3 +89,4 @@ export default function MessageActions({ message }: MessageActionsProps) {
     </div>
   )
 }
+export default ChatMessageActions

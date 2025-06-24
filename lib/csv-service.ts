@@ -1,10 +1,10 @@
 import { CSV_CONFIG } from '@/constants/app-config'
-import { Candidate } from '@/types/candidate.types'
+import { Candidate } from '@/types'
 import Papa from 'papaparse'
 
 let cachedHeaders: string[] | null = null
 
-export async function getCsvHeaders(): Promise<string[]> {
+const getCsvHeaders = async (): Promise<string[]> => {
   if (cachedHeaders) {
     return cachedHeaders
   }
@@ -25,11 +25,11 @@ export async function getCsvHeaders(): Promise<string[]> {
   }
 }
 
-export async function clearHeaderCache(): Promise<void> {
+const clearHeaderCache = async (): Promise<void> => {
   cachedHeaders = null
 }
 
-export async function loadCandidates(): Promise<Candidate[]> {
+const loadCandidates = async (): Promise<Candidate[]> => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/csv`)
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`)
@@ -93,3 +93,5 @@ export async function loadCandidates(): Promise<Candidate[]> {
     })
   })
 }
+
+export { getCsvHeaders, clearHeaderCache, loadCandidates }

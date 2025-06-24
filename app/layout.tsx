@@ -1,19 +1,20 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
+import AppNavBar from '@/components/common/app-nav-bar'
+
 import { Inter } from 'next/font/google'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { AppSidebar } from '@/components/common/app-sidebar'
+import AppSidebar from '@/components/common/app-sidebar'
 import { ThemeProvider } from '@/components/common/theme-provider'
-import { NavHeader } from '@/components/common/nav-header'
-import { APP_CONFIG, THEME_CONFIG } from '@/constants/app-config'
+import { THEME_CONFIG } from '@/constants/app-config'
 import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: APP_CONFIG.APP_NAME,
-  description: APP_CONFIG.APP_DESCRIPTION,
+  title: 'ATS-Lite',
+  description: 'Watch the ATS Think - Transparent candidate filtering and ranking',
 }
 
 export default function RootLayout({
@@ -34,7 +35,7 @@ export default function RootLayout({
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-              <NavHeader />
+              <AppNavBar />
               <div className="flex flex-1 flex-col gap-4">{children}</div>
             </SidebarInset>
           </SidebarProvider>

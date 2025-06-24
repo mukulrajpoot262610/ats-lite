@@ -1,15 +1,14 @@
-import { FilterPlan, RankingPlan } from '@/types/mcp.types'
-import { Candidate } from '@/types/candidate.types'
+import { FilterPlan, RankingPlan, Candidate } from '@/types'
 import { Brain, ArrowUpDown, Filter, MessageSquare } from 'lucide-react'
 import { ThinkingStep } from './thinking-timeline'
 
-export function createTimelineSteps(
+const CreateTimelineSteps = (
   phase: string,
-  plan?: { filter?: FilterPlan; rank?: RankingPlan },
-  filtered?: Candidate[],
-  ranked?: Candidate[],
-  summary?: string,
-): ThinkingStep[] {
+  plan?: { filter?: FilterPlan; rank?: RankingPlan } | null,
+  filtered?: Candidate[] | null,
+  ranked?: Candidate[] | null,
+  summary?: string | null,
+): ThinkingStep[] => {
   const steps: ThinkingStep[] = [
     {
       id: 'filter-plan',
@@ -53,10 +52,10 @@ export function createTimelineSteps(
     },
   ]
 
-  // If filtered is defined and empty, stop timeline at Match Count
   if (filtered && filtered.length === 0) {
     return steps.slice(0, 2)
   }
 
   return steps
 }
+export default CreateTimelineSteps

@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useChatStore } from '@/store/useChatStore'
+import { Candidate } from '@/types'
+
 import ChatInput from '@/components/chat/chat-input'
 import ChatGreetings from '@/components/chat/chat-greetings'
 import ChatSuggestions from '@/components/chat/chat-suggestions'
 import ChatMessages from '@/components/chat/chat-messages'
-import { useChatStore } from '@/store/useChatStore'
-import { Candidate } from '@/types/candidate.types'
-import { CandidateSheet } from '@/components/chat/candidate-sheet'
+import CandidateSheet from '@/components/candidate/candidate-sheet'
 
 export default function Page() {
   const { messages } = useChatStore()

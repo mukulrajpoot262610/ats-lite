@@ -5,7 +5,7 @@ import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/c
 import { NAV_CONFIG } from '@/constants/app-config'
 import { cn } from '@/lib/utils'
 
-export function NavUser() {
+const AppSidebarUser = () => {
   const { open } = useSidebar()
 
   return (
@@ -28,3 +28,4 @@ export function NavUser() {
     </SidebarMenu>
   )
 }
+export default AppSidebarUser

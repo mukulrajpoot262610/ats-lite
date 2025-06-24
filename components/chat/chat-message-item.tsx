@@ -2,29 +2,27 @@
 
 import React from 'react'
 import { cn } from '@/lib/utils'
-import { ChatMessage } from '@/types/chat.types'
-import MessageActions from './message-actions'
-import { ThinkingTimeline } from './thinking-timeline'
-import { CandidateResults } from './candidate-results'
+import { ChatMessage, Candidate } from '@/types'
+import ChatMessageActions from './chat-message-actions'
+import ThinkingTimeline from './thinking-timeline'
+import CandidateResults from '../candidate/candidate-results'
 import { useMCPStore } from '@/store/useMcpStore'
-import { Candidate } from '@/types/candidate.types'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
 import rehypeRaw from 'rehype-raw'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { createTimelineSteps } from './create-timeline-steps'
+import CreateTimelineSteps from './create-timeline-steps'
 
-interface MessageItemProps {
+interface ChatMessageItemProps {
   message: ChatMessage
   onCandidateClick?: (candidate: Candidate) => void
 }
 
-export default function MessageItem({ message, onCandidateClick }: MessageItemProps) {
+const ChatMessageItem = ({ message, onCandidateClick }: ChatMessageItemProps) => {
   const { phase, plan, filtered, ranked, reply } = useMCPStore()
 
-  // Use stored thinking data from the message or fall back to global store for active thinking messages
   const messageThinkingData = message.data?.thinkingData
   const useStoredData = message.isComplete || message.sender !== 'thinking'
 
@@ -34,7 +32,7 @@ export default function MessageItem({ message, onCandidateClick }: MessageItemPr
   const thinkingRanked = useStoredData ? messageThinkingData?.ranked : ranked
   const thinkingReply = useStoredData ? messageThinkingData?.reply : reply
 
-  const steps = createTimelineSteps(
+  const steps = CreateTimelineSteps(
     thinkingPhase,
     thinkingPlan || undefined,
     thinkingFiltered,
@@ -144,8 +142,9 @@ export default function MessageItem({ message, onCandidateClick }: MessageItemPr
         )}
 
         {/* Message actions */}
-        {message.sender === 'assistant' && <MessageActions message={message as ChatMessage} />}
+        {message.sender === 'assistant' && <ChatMessageActions message={message as ChatMessage} />}
       </div>
     </div>
   )
 }
+export default ChatMessageItem

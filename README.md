@@ -1,172 +1,361 @@
-# ATS Challenge — "Watch the ATS Think"
+# 🎯 ATS Lite
 
-_A mini coding exercise that shows off front‑end polish, back‑end logic, and a transparent agent loop._
+**ATS Lite** is an intelligent Applicant Tracking System powered by AI that allows recruiters to query candidate datasets using natural language. Built with Next.js and featuring a transparent **MCP (Model Context Protocol)** loop, it provides real-time AI-driven candidate filtering, ranking, and analysis.
+
+## ✨ Features
+
+### 🤖 **AI-Powered Candidate Search**
+
+- Natural language querying of candidate databases
+- Intelligent filtering and ranking based on complex criteria
+- Real-time AI reasoning with transparent thinking process
+
+### 💬 **Interactive Chat Interface**
+
+- ChatGPT-like streaming responses
+- Smart suggestions for common recruiter queries
+- Real-time message processing with visual feedback
+
+### 📊 **Transparent MCP Loop**
+
+- **THINK**: AI analyzes your query and creates a plan
+- **ACT 1**: Filter candidates based on criteria
+- **ACT 2**: Rank candidates by relevance
+- **SPEAK**: Generate human-friendly summaries
+
+### 🎨 **Modern UI/UX**
+
+- Clean, responsive design with dark/light theme support
+- Animated transitions powered by Framer Motion
+- Collapsible sidebar with chat history
+- Detailed candidate profile sheets
+
+### 📈 **Advanced Analytics**
+
+- Candidate statistics and insights
+- Skills distribution analysis
+- Experience level breakdowns
+- Location and availability metrics
 
 ## 🚀 Quick Start
 
-```bash
-# Install dependencies
-pnpm install
+### Prerequisites
 
-# Set up environment variables
-cp .env.example .env.local
-# Add your OpenAI API key to .env.local
+- **Node.js** 18+ or **Bun** (recommended)
+- **OpenAI API Key**
 
-# Start development server
-pnpm dev
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <your-repo-url>
+   cd ats-lite
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   # Using Bun (recommended)
+   bun install
+
+   # Or using pnpm
+   pnpm install
+   ```
+
+3. **Set up environment variables**
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Add your OpenAI API key:
+
+   ```env
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+
+4. **Run the development server**
+
+   ```bash
+   # Using Bun
+   bun dev
+
+   # Or using npm
+   pnpm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 💡 Usage Examples
+
+### Natural Language Queries
+
+**Find experienced developers:**
+
+```javascript
+'Frontend engineers, sort by experience, most experience first'
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see ATS-Lite in action!
+**Filter by location and salary:**
+
+```javascript
+'Remote Python developers with salary below 150k'
+```
+
+**Complex criteria:**
+
+```javascript
+'Data engineers in Berlin with less than 2 weeks notice'
+```
+
+**Specific requirements:**
+
+```javascript
+'DevOps Engineer in India, most experience first'
+```
+
+### Chat Interface
+
+1. **Start a conversation** by typing your query
+2. **Watch the MCP loop** unfold in real-time:
+   - See the AI's thinking process
+   - View filtering and ranking steps
+   - Get detailed candidate results
+3. **Click on candidates** to view detailed profiles
+4. **Use suggestions** for common queries
+
+## 🏗️ Architecture
+
+### Tech Stack
+
+| Category             | Technology              |
+| -------------------- | ----------------------- |
+| **Framework**        | Next.js 15 (App Router) |
+| **Language**         | TypeScript              |
+| **Styling**          | Tailwind CSS            |
+| **Animations**       | Framer Motion           |
+| **State Management** | Zustand                 |
+| **AI Integration**   | OpenAI GPT-4o-mini      |
+| **CSV Processing**   | PapaParse               |
+| **UI Components**    | Radix UI                |
+| **Testing**          | Jest + Testing Library  |
+
+### MCP Loop Architecture
+
+```mermaid
+graph TD
+    A[User Query] --> B[THINK: AI Planning]
+    B --> C[ACT 1: Filter Candidates]
+    C --> D[ACT 2: Rank Results]
+    D --> E[SPEAK: Generate Summary]
+    E --> F[Display Results]
+
+    B -.-> G[Filter Plan]
+    B -.-> H[Ranking Plan]
+    C -.-> I[Filtered Candidates]
+    D -.-> J[Ranked List]
+    E -.-> K[AI Summary]
+```
+
+### Project Structure
+
+```javascript
+ats-lite/
+├── app/                      # Next.js App Router
+│   ├── api/                  # API routes
+│   │   ├── _tools/          # Shared API utilities
+│   │   ├── csv/             # CSV processing endpoint
+│   │   └── llm/             # LLM integration endpoint
+│   ├── layout.tsx           # Root layout
+│   └── page.tsx             # Main chat interface
+├── components/              # React components
+│   ├── chat/               # Chat interface components
+│   ├── candidate/          # Candidate-related components
+│   ├── common/             # Shared components
+│   └── ui/                 # Base UI components
+├── hooks/                  # Custom React hooks
+├── lib/                    # Utility libraries
+├── store/                  # Zustand state management
+├── types/                  # TypeScript type definitions
+├── constants/              # Configuration constants
+└── public/                 # Static assets
+    └── candidates.csv      # Sample candidate data
+```
+
+## 🔧 Configuration
+
+### App Configuration
+
+Key configurations are centralized in `constants/app-config.ts`:
+
+```typescript
+// LLM Settings
+LLM_CONFIG = {
+  DEFAULT_MODEL: 'gpt-4o-mini',
+  TEMPERATURE: 0.1,
+  MAX_TOKENS: 1000,
+}
+
+// Candidate Processing
+CANDIDATE_CONFIG = {
+  TOP_SKILLS_COUNT: 5,
+  TOP_CANDIDATES_COUNT: 5,
+  SKILLS_DISPLAY_COUNT: 5,
+}
+```
+
+### Environment Variables
+
+```env
+# Required
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Optional
+NEXT_PUBLIC_APP_NAME=ATS Lite
+NEXT_PUBLIC_APP_DESCRIPTION=AI Agents for ATS
+```
 
 ## 🧪 Testing
 
+### Run Tests
+
 ```bash
-# Run tests
-pnpm test
+# Run all tests
+bun test
 
-# Run tests in watch mode
-pnpm test:watch
+# Watch mode
+bun test --watch
+
+# Coverage report
+bun test --coverage
 ```
 
-## 1 · Scenario
+### Test Structure
 
-You ship a tiny **Next.js** site that:
-
-1. **Pre‑loads a CSV** — `candidates.csv` (≈ 50 dummy rows)
-
-   ```csv
-   id,full_name,title,location,years_experience,skills,availability_weeks,willing_to_relocate,etc.
-   ```
-
-2. Displays a **chat box** for recruiters to type natural‑language queries such as:
-
-   > Backend engineers in Germany, most experience first.
-
-3. Runs an explicit **MCP loop** (Think → Act → Act → Speak) to
-
-   - **filter** the dataset
-   - **rank** the subset
-   - **stream every step** to the UI with smooth animations
-
-The assistant is nick‑named **ATS‑Lite**.
-
-## 2 · Required Tools (pure JavaScript)
-
-| Tool                        | Signature                                         | Purpose                            |
-| --------------------------- | ------------------------------------------------- | ---------------------------------- |
-| `filterCandidates(plan)`    | `{ include?, exclude? } → Candidate[]`            | Boolean / regex / ≥ filtering      |
-| `rankCandidates(ids, plan)` | `{ primary, tie_breakers? } → Candidate[]`        | Scores & sorts the filtered subset |
-| `aggregateStats(ids)`[^1]   | `ids[] → { count, avg_experience, top_skills[] }` | Quick stats for richer replies     |
-
-All tools are _synchronous_ – no DB or external I/O.
-
-[^1]: Optional, but helpful for richer assistant summaries.
-
-## 3 · MCP Workflow
-
-1. **THINK** – The LLM receives the user message **plus** the CSV header row and replies _only_ with JSON:
-
-   ```json
-   {
-     "filter": {
-       /* FilterPlan */
-     },
-     "rank": {
-       /* RankingPlan */
-     }
-   }
-   ```
-
-2. **ACT 1** – Front‑end calls `filterCandidates(filterPlan)`
-
-3. **ACT 2** – Front‑end calls `rankCandidates(ids, rankingPlan)`
-
-4. **SPEAK** – Front‑end calls the LLM again, passing the **top 5 rows** to generate a recruiter‑friendly summary
-
-Each phase emits an event that surfaces live in the UI.
-
-## 4 · UI & Animation Requirements
-
-| Area                 | Must‑have                                                                                                                       | Library ideas                     |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| **Chat panel**       | Stream assistant tokens as they arrive                                                                                          | Tailwind, `react-virtual`         |
-| **Timeline sidebar** | Collapsible panel that reveals, one line at a time: 1️⃣ filter plan JSON → 2️⃣ match count → 3️⃣ ranking plan JSON → 4️⃣ ranked IDs | `framer-motion` (stagger / slide) |
-| **Result table**     | Always shows the **current ranked subset**; when rows change or reorder, they **animate** into place                            | `framer-motion` layout / FLIP     |
-| Loading cues         | Progress bar or shimmer while the agent works                                                                                   | `nprogress` or custom             |
-| Row details          | Click a row → side panel with full candidate JSON                                                                               | —                                 |
-
-## 5 · Example Flow
-
-```text
-You: Backend engineers in Germany, most experience first.
-
-Timeline ▶
-1️⃣ filter plan ready
-2️⃣ 7 rows matched
-3️⃣ ranking plan ready
-4️⃣ ranked IDs [14, 5, 22, …]   ← lines fade‑in one by one
-
-Result table slides into new order.
-
-ATS‑Lite: I found 7 matches (avg 6.1 yrs). Here are the top three…
+```bash
+__tests__/
+├── mcp-tools.test.ts       # MCP workflow tests
+└── components/             # Component tests
 ```
 
-## 🎯 Implementation Highlights
+## 📊 Data Format
 
-### ✅ **Core Features**
+### Candidate CSV Structure
 
-- **Complete MCP Workflow**: Think → Filter → Rank → Speak with real-time UI updates
-- **Advanced Filtering**: Boolean, regex, and numeric operators (`>=`, `<=`, etc.)
-- **Intelligent Ranking**: Primary field + tie-breakers with ascending/descending order
-- **Real-time Timeline**: Animated step-by-step visualization of the agent's thinking process
-- **Responsive Animations**: Smooth FLIP animations for candidate table reordering
-- **Keyboard Shortcuts**: ⌘+Enter to send messages for power users
+The system expects candidates data in CSV format with these columns:
 
-### 🏗️ **Architecture**
+```csv
+id,full_name,title,location,timezone,years_experience,skills,languages,education_level,degree_major,availability_weeks,willing_to_relocate,work_preference,notice_period_weeks,desired_salary_usd,open_to_contract,remote_experience_years,visa_status,citizenships,summary,tags,last_active,linkedin_url
+```
 
-- **Modular Services**: Clean separation between `MCPService`, `LLMService`, and UI components
-- **Type Safety**: Full TypeScript coverage with proper interfaces
-- **State Management**: Zustand for clean, reactive state management
-- **Error Handling**: Graceful error recovery and user feedback
+### Candidate Type Definition
 
-### 🎨 **UI/UX Polish**
+```typescript
+type Candidate = {
+  id: string
+  full_name: string
+  title: string
+  location: string
+  years_experience: number
+  skills: string[]
+  desired_salary_usd: number
+  // ... and more fields
+}
+```
 
-- **Framer Motion**: Staggered animations, layout transitions, and micro-interactions
-- **Tailwind CSS**: Modern, responsive design with dark mode support
-- **Radix UI**: Accessible, composable UI components
-- **Smooth Interactions**: Loading states, skeleton screens, and progressive disclosure
+## 🎨 UI Components
 
-## 6 · Deliverables
+### Key Components
 
-- ✅ **Git repo** with clean commits & clear `README.md` (`pnpm install && pnpm dev`)
-- ✅ **`.env.example`** for the OpenAI key
-- ✅ **Jest tests** with meaningful coverage including the required test case
-- 🔄 **Live deployment** (coming soon)
+- **ChatInput**: Message input with keyboard shortcuts
+- **ChatMessages**: Streaming message display
+- **ThinkingTimeline**: Visual MCP loop progress
+- **CandidateSheet**: Detailed candidate profiles
+- **AppSidebar**: Navigation and chat history
 
-## 7 · Technology Stack
+### Theme Support
 
-- **Framework**: Next.js 15 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + Radix UI
-- **Animations**: Framer Motion
-- **State**: Zustand
-- **Testing**: Jest + Bun
-- **LLM**: OpenAI GPT-4
-- **Package Manager**: pnpm/bun
+- Light/Dark mode toggle
+- System theme detection
+- Persistent theme preferences
+
+## 🔌 API Endpoints
+
+### `/api/llm`
+
+- **Method**: POST
+- **Purpose**: Handle LLM interactions
+- **Body**: `{ messages: ChatMessage[], model: string }`
+
+### `/api/csv`
+
+- **Method**: GET
+- **Purpose**: Fetch and parse candidate data
+- **Returns**: Parsed candidate array
+
+## 🚢 Deployment
+
+### Vercel
+
+1. **Connect your repository** to Vercel
+2. **Add environment variables** in Vercel dashboard
+3. **Deploy** automatically on push to main
+
+## 🛠️ Development
+
+### Available Scripts
+
+```bash
+bun dev          # Start development server
+bun build        # Build for production
+bun start        # Start production server
+bun lint         # Run ESLint
+bun test         # Run tests
+bun test:watch   # Run tests in watch mode
+```
+
+### Code Quality
+
+- **ESLint** for code linting
+- **Prettier** for code formatting
+- **TypeScript** for type safety
+- **Jest** for testing
+
+## 🤝 Contributing
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+## 🐛 Troubleshooting
+
+### OpenAI API Key Not Working
+
+- Verify your API key in `.env.local`
+- Check API key permissions and billing status
+
+### CSV Not Loading
+
+- Ensure `candidates.csv` exists in the `public/` directory
+- Verify CSV format matches expected columns
+
+### Build Errors
+
+- Clear `.next` directory: `rm -rf .next`
+- Reinstall dependencies: `bun install`
+
+### Debug Mode
+
+Enable debug logging by setting:
+
+```env
+NODE_ENV=development
+```
 
 ---
 
-### Keep It Small 📎
-
-No auth, no uploads, no database — just a CSV in memory, two synchronous tools, two LLM calls, and a polished UI that lets reviewers **watch the ATS think** in real time.
-
-### 🧪 Test Coverage
-
-The project includes comprehensive Jest tests covering:
-
-- MCP tool functionality (filter, rank, aggregate)
-- The exact challenge scenario: "React dev, Cyprus, sort by experience desc"
-- Edge cases and error conditions
-- Integration between filtering and ranking
-
-Run `pnpm test` to see all tests pass! ✨
+### Built with ❤️ for modern recruitment workflows

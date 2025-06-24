@@ -9,7 +9,7 @@ import { useChatStore } from '@/store/useChatStore'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 
-export function NavMain() {
+export function AppSidebarHeader() {
   const { open } = useSidebar()
   const [, setOpenCommand] = useState(false)
   const { chats } = useChatStore()

@@ -1,6 +1,12 @@
-import { Candidate } from '@/types/candidate.types'
-import { ChatMessage } from '@/types/chat.types'
-import { FilterPlan, RankingPlan, ThinkPlanResponse, CandidateStats, MCPResult, MCPStepResult } from '@/types/mcp.types'
+import {
+  Candidate,
+  ChatMessage,
+  FilterPlan,
+  RankingPlan,
+  ThinkPlanResponse,
+  CandidateStats,
+  MCPStepResult,
+} from '@/types'
 import { filterCandidates, rankCandidates, aggregateStats } from '@/lib/mcp-tools'
 import { llmService } from '@/lib/llm-service'
 import { CANDIDATE_CONFIG, CSV_CONFIG } from '@/constants/app-config'
@@ -101,54 +107,7 @@ export class MCPService {
   }
 
   /**
-   * Execute the complete MCP loop: Think → Act → Act → Speak
-   * 🔒 Server-only: For use in API routes
-   */
-  async executeLoop(messages: ChatMessage[]): Promise<MCPResult> {
-    try {
-      // STEP 1: THINK
-      const planResponse = await this.think(messages)
-
-      // STEP 2: ACT 1 - Filter
-      const filteredCandidates = this.filter(planResponse.filter)
-
-      // Check if no candidates found - stop here and return early
-      if (filteredCandidates.length === 0) {
-        return {
-          filteredCandidates: [],
-          rankedCandidates: [],
-          topCandidates: [],
-          stats: { count: 0, avg_experience: 0, top_skills: [] },
-          summary: 'No candidates found matching your criteria. Please try adjusting your search filters.',
-        }
-      }
-
-      // STEP 3: ACT 2 - Rank
-      const rankedCandidates = this.rank(planResponse.rank, filteredCandidates)
-
-      // Get top candidates and stats
-      const topCandidates = rankedCandidates.slice(0, CANDIDATE_CONFIG.TOP_CANDIDATES_COUNT)
-      const stats = this.getStats(rankedCandidates)
-
-      // STEP 4: SPEAK
-      const summary = await this.speak(messages, topCandidates, stats)
-
-      return {
-        filteredCandidates,
-        rankedCandidates,
-        topCandidates,
-        stats,
-        summary,
-      }
-    } catch (error) {
-      console.error('MCP loop execution failed:', error)
-      throw error
-    }
-  }
-
-  /**
    * Execute MCP loop with step-by-step callbacks (for debugging/monitoring)
-   * 🔒 Server-only: For use in API routes with streaming
    */
   async executeLoopWithSteps(messages: ChatMessage[], onStep?: (step: MCPStepResult) => void) {
     try {
