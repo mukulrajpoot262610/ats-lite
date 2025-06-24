@@ -9,6 +9,7 @@ import { useMCPStore } from '@/store/useMcpStore'
 import { loadCandidates } from '@/lib/csv-service'
 import { SendIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
 export default function ChatInput() {
   const { message, setMessage, currentChatId, createNewChat, addMessage, messages, selectedModel } = useChatStore()
@@ -30,6 +31,16 @@ export default function ChatInput() {
     }
     initializeCandidates()
   }, [])
+
+  // Use the keyboard shortcuts hook for chat shortcuts
+  useKeyboardShortcuts({
+    onSendMessage: () => {
+      // Only trigger if we have content and service
+      if (message.trim() && mcpService) {
+        handleSend()
+      }
+    },
+  })
 
   const handleSend = async () => {
     if (!message.trim() || !mcpService) return
@@ -142,7 +153,6 @@ export default function ChatInput() {
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    // Handle Enter (without Shift) or Cmd+Enter / Ctrl+Enter
     const isEnterWithoutShift = e.key === 'Enter' && !e.shiftKey
     const isCmdEnter = e.key === 'Enter' && (e.metaKey || e.ctrlKey)
 

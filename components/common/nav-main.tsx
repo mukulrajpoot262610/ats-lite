@@ -17,47 +17,21 @@ import { CommandEmpty } from '../ui/command'
 import { CommandShortcut } from '../ui/command'
 import { Calendar } from 'lucide-react'
 import { useState } from 'react'
-import { useEffect } from 'react'
 import { useChatStore } from '@/store/useChatStore'
-import { toast } from 'sonner'
+import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
 export function NavMain() {
   const { open } = useSidebar()
   const [openCommand, setOpenCommand] = useState(false)
-  const { createNewChat, chats } = useChatStore()
+  const { chats } = useChatStore()
 
   // Check if there's an empty chat that exists
   const hasEmptyChat = chats.some(chat => chat.messages.length === 0)
 
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setOpenCommand(open => !open)
-      }
-      if (e.key === 'n' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        handleNewChat()
-      }
-    }
-    document.addEventListener('keydown', down)
-    return () => document.removeEventListener('keydown', down)
-  }, [])
-
-  const handleNewChat = () => {
-    // Check if there's already an empty chat before creating
-    const existingEmptyChat = chats.find(chat => chat.messages.length === 0)
-
-    if (existingEmptyChat) {
-      // Show feedback that we're switching to existing empty chat
-      toast.info('Switched to existing empty chat', {
-        description: 'You already have an empty chat. Start typing to begin the conversation!',
-        duration: 3000,
-      })
-    }
-
-    createNewChat()
-  }
+  // Use the keyboard shortcuts hook
+  const { handleNewChat } = useKeyboardShortcuts({
+    onOpenCommandPalette: () => setOpenCommand(true),
+  })
 
   const handleItemClick = (item: (typeof NAV_CONFIG.NAV_DATA)[number]) => {
     if (item.NAV_TITLE === 'New Chat') {
@@ -92,7 +66,7 @@ export function NavMain() {
                 {item.NAV_TITLE === 'New Chat' && hasEmptyChat ? 'Switch to Chat' : item.NAV_TITLE}
               </span>
             </div>
-            <kbd className={cn(open && 'visible', 'invisible')}>
+            <kbd>
               <span className="text-xs font-semibold text-muted-foreground">{item.NAV_SHORTCUT}</span>
             </kbd>
           </SidebarMenuButton>
