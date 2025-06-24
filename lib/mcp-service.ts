@@ -112,6 +112,17 @@ export class MCPService {
       // STEP 2: ACT 1 - Filter
       const filteredCandidates = this.filter(planResponse.filter)
 
+      // Check if no candidates found - stop here and return early
+      if (filteredCandidates.length === 0) {
+        return {
+          filteredCandidates: [],
+          rankedCandidates: [],
+          topCandidates: [],
+          stats: { count: 0, avg_experience: 0, top_skills: [] },
+          summary: 'No candidates found matching your criteria. Please try adjusting your search filters.',
+        }
+      }
+
       // STEP 3: ACT 2 - Rank
       const rankedCandidates = this.rank(planResponse.rank, filteredCandidates)
 
@@ -148,6 +159,11 @@ export class MCPService {
       // STEP 2: ACT 1 - Filter
       const filteredCandidates = this.filter(planResponse.filter)
       onStep?.({ step: 'filter', data: filteredCandidates })
+
+      // Check if no candidates found - stop here and return early
+      if (filteredCandidates.length === 0) {
+        return 'No candidates found matching your criteria. Please try adjusting your search filters.'
+      }
 
       // STEP 3: ACT 2 - Rank
       const rankedCandidates = this.rank(planResponse.rank, filteredCandidates)

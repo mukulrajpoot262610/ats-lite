@@ -53,5 +53,10 @@ export function createTimelineSteps(
     },
   ]
 
+  // If filtered is defined and empty, stop timeline at Match Count
+  if (filtered && filtered.length === 0) {
+    return steps.slice(0, 2)
+  }
+
   return steps
 }

@@ -86,6 +86,11 @@ export default function ChatSuggestions() {
           case 'filter':
             setPhase('filtering')
             setFiltered(step.data)
+            // Check if no candidates found and handle early exit
+            if (step.data.length === 0) {
+              setPhase('idle')
+              return
+            }
             break
           case 'rank':
             setPhase('ranking')
@@ -110,7 +115,7 @@ export default function ChatSuggestions() {
       const { ranked } = useMCPStore.getState()
       if (ranked && ranked.length > 0) {
         addMessage({
-          text: 'Here are the candidates that match your request:',
+          text: '',
           sender: 'system',
           data: {
             type: 'candidate-results',

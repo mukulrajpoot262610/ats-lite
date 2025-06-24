@@ -250,17 +250,17 @@ export function ThinkingTimeline({
 
 export function StepDataDisplay({ step }: { step: ThinkingStep }) {
   // Helper function to check if data is an array of candidates
-  const isCandidateArray = (data: any): data is Candidate[] => {
+  const isCandidateArray = (data: ThinkingStepData): data is Candidate[] => {
     return Array.isArray(data) && data.length > 0 && typeof data[0] === 'object' && 'id' in data[0]
   }
 
   // Helper function to check if data is a filter plan object
-  const isFilterPlan = (data: any): data is { filter?: FilterPlan } => {
+  const isFilterPlan = (data: ThinkingStepData): data is { filter?: FilterPlan } => {
     return typeof data === 'object' && data !== null && 'filter' in data
   }
 
   // Helper function to check if data is a ranking plan object
-  const isRankingPlan = (data: any): data is { rank?: RankingPlan } => {
+  const isRankingPlan = (data: ThinkingStepData): data is { rank?: RankingPlan } => {
     return typeof data === 'object' && data !== null && 'rank' in data
   }
 
@@ -336,12 +336,6 @@ export function StepDataDisplay({ step }: { step: ThinkingStep }) {
           <div className="text-muted-foreground font-medium">
             Generated {typeof step.data === 'string' ? step.data.length : 0} character summary
           </div>
-          {typeof step.data === 'string' && step.data && (
-            <div className="bg-background/80 p-3 rounded border">
-              <div className="font-medium text-muted-foreground mb-2">Summary Content:</div>
-              <div className="text-foreground leading-relaxed">{step.data}</div>
-            </div>
-          )}
         </div>
       )
 

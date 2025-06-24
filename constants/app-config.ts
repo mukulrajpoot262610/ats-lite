@@ -128,7 +128,7 @@ export const SUGGESTIONS_CONFIG = {
     },
     {
       SUGGESTION_ICON: BrainIcon,
-      SUGGESTION_TITLE: 'React developers in India, most experience first',
+      SUGGESTION_TITLE: 'DevOps Engineer in India, most experience first',
     },
   ],
 } as const
