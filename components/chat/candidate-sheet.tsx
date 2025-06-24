@@ -1,5 +1,4 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { useChatStore } from '@/store/useChatStore'
 import { Candidate } from '@/types/candidate.types'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'

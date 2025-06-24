@@ -8,15 +8,14 @@ import { useChatStore } from '@/store/useChatStore'
 import { useMCPStore } from '@/store/useMcpStore'
 import { loadCandidates } from '@/lib/csv-service'
 import { SendIcon } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
 export default function ChatInput() {
   const { message, setMessage, currentChatId, createNewChat, addMessage, messages, selectedModel, updateMessage } =
     useChatStore()
   const { setPhase, setPlan, setFiltered, setRanked, setReply } = useMCPStore()
-  const [mcpService, setMcpService] = useState<MCPService | null>(null)
-  const [thinkingMessageId, setThinkingMessageId] = useState<string | null>(null)
+  const [mcpService, setMcpService] = React.useState<MCPService | null>(null)
 
   // Load candidates and create MCP service on mount
   useEffect(() => {
@@ -60,7 +59,6 @@ export default function ChatInput() {
 
     // Add thinking message
     const thinkingId = generateUniqueId('thinking')
-    setThinkingMessageId(thinkingId)
     addMessage({
       id: thinkingId,
       text: '',
@@ -98,7 +96,7 @@ export default function ChatInput() {
             setPlan(step.data)
             // Update thinking message with current state
             if (thinkingId) {
-              const { phase, plan, filtered, ranked, reply } = useMCPStore.getState()
+              const { filtered, ranked, reply } = useMCPStore.getState()
               updateMessage(thinkingId, {
                 text: '',
                 sender: 'thinking' as const,
@@ -255,8 +253,6 @@ export default function ChatInput() {
         sender: 'assistant',
         model: selectedModel.name,
       })
-    } finally {
-      setThinkingMessageId(null)
     }
   }
 
