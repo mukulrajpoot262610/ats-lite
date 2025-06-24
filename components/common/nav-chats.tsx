@@ -19,7 +19,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { useChatStore } from '@/store/useChatStore'
-import { cn } from '@/lib/utils'
+import { cn, formatChatTime } from '@/lib/utils'
 
 export function NavChats() {
   const { isMobile, open } = useSidebar()
@@ -32,19 +32,6 @@ export function NavChats() {
   const handleDeleteChat = (chatId: string, e: React.MouseEvent) => {
     e.stopPropagation()
     deleteChat(chatId)
-  }
-
-  const formatChatTime = (date: Date) => {
-    const now = new Date()
-    const diffInHours = Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60)
-
-    if (diffInHours < 1) {
-      return 'Just now'
-    } else if (diffInHours < 24) {
-      return `${Math.floor(diffInHours)}h ago`
-    } else {
-      return date.toLocaleDateString()
-    }
   }
 
   return (
@@ -77,7 +64,7 @@ export function NavChats() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>{chat.messages.length} messages</span>
                         <span>•</span>
-                        <span>{formatChatTime(chat.updatedAt)}</span>
+                        <span>{formatChatTime(chat.createdAt)}</span>
                       </div>
                     </div>
                   )}

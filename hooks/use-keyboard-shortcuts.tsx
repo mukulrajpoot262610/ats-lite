@@ -21,6 +21,7 @@ export interface UseKeyboardShortcutsOptions {
   onOpenShortcuts?: () => void
   onOpenCommandPalette?: () => void
   onSendMessage?: () => void
+  onToggleTheme?: () => void
 }
 
 export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) {
@@ -73,6 +74,15 @@ export function useKeyboardShortcuts(options: UseKeyboardShortcutsOptions = {}) 
         description: 'Show keyboard shortcuts',
         category: 'General',
         action: () => options.onOpenShortcuts?.(),
+        preventDefault: true,
+      },
+      {
+        key: 'l',
+        metaKey: true,
+        shiftKey: true,
+        description: 'Toggle theme',
+        category: 'General',
+        action: () => options.onToggleTheme?.(),
         preventDefault: true,
       },
       {

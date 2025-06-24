@@ -7,6 +7,7 @@ import { AppSidebar } from '@/components/common/app-sidebar'
 import { ThemeProvider } from '@/components/common/theme-provider'
 import { NavHeader } from '@/components/common/nav-header'
 import { APP_CONFIG, THEME_CONFIG } from '@/constants/app-config'
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           enableSystem={THEME_CONFIG.ENABLE_SYSTEM}
           disableTransitionOnChange
         >
+          <Toaster position="top-center" richColors />
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>

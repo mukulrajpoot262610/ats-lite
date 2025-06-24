@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Sparkles, Keyboard } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 import { Button } from '@/components/ui/button'
 import { ModeToggle } from './theme-toggle'
@@ -10,13 +11,22 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
 
 export function NavActions() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const { setTheme, theme } = useTheme()
+
+  const toggleTheme = () => {
+    if (theme === 'light') {
+      setTheme('dark')
+    } else if (theme === 'dark') {
+      setTheme('system')
+    } else {
+      setTheme('light')
+    }
+  }
 
   const { getShortcutsForDisplay, handleNewChat } = useKeyboardShortcuts({
     onOpenShortcuts: () => setShortcutsOpen(true),
-    onOpenCommandPalette: () => {
-      // This will be handled by the nav-main component's command dialog
-      console.log('Command palette triggered from shortcut')
-    },
+    onOpenCommandPalette: () => {},
+    onToggleTheme: toggleTheme,
   })
 
   const shortcutsData = getShortcutsForDisplay()

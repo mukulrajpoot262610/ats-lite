@@ -2,11 +2,9 @@
 
 import { NAV_CONFIG } from '@/constants/app-config'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar'
-import { Bot, Settings, Smile } from 'lucide-react'
-import { Calculator } from 'lucide-react'
-import { User } from 'lucide-react'
-import { CreditCard } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Bot, Sparkles } from 'lucide-react'
+import { Keyboard } from 'lucide-react'
+import { cn, formatChatTime } from '@/lib/utils'
 import { CommandDialog } from '../ui/command'
 import { CommandInput } from '../ui/command'
 import { CommandList } from '../ui/command'
@@ -15,7 +13,6 @@ import { CommandItem } from '../ui/command'
 import { CommandSeparator } from '../ui/command'
 import { CommandEmpty } from '../ui/command'
 import { CommandShortcut } from '../ui/command'
-import { Calendar } from 'lucide-react'
 import { useState } from 'react'
 import { useChatStore } from '@/store/useChatStore'
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts'
@@ -25,10 +22,8 @@ export function NavMain() {
   const [openCommand, setOpenCommand] = useState(false)
   const { chats } = useChatStore()
 
-  // Check if there's an empty chat that exists
   const hasEmptyChat = chats.some(chat => chat.messages.length === 0)
 
-  // Use the keyboard shortcuts hook
   const { handleNewChat } = useKeyboardShortcuts({
     onOpenCommandPalette: () => setOpenCommand(true),
   })
@@ -79,35 +74,54 @@ export function NavMain() {
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup heading="Suggestions">
             <CommandItem>
-              <Calendar />
-              <span>Calendar</span>
+              <Sparkles className="w-4 h-4 text-muted-foreground" />
+              <span>New Chat</span>
+              <CommandShortcut>
+                <div className="flex items-center gap-1">
+                  <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                    <span>⌘</span>
+                  </kbd>
+                  <span>+</span>
+                  <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                    <span>M</span>
+                  </kbd>
+                </div>
+              </CommandShortcut>
             </CommandItem>
             <CommandItem>
-              <Smile />
-              <span>Search Emoji</span>
-            </CommandItem>
-            <CommandItem>
-              <Calculator />
-              <span>Calculator</span>
+              <Keyboard className="w-4 h-4 text-muted-foreground" />
+              <span>Keyboard Shortcuts</span>
+              <CommandShortcut>
+                <div className="flex items-center gap-1">
+                  <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                    <span>⌘</span>
+                  </kbd>
+                  <span>+</span>
+                  <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                    <span>K</span>
+                  </kbd>
+                </div>
+              </CommandShortcut>
             </CommandItem>
           </CommandGroup>
           <CommandSeparator />
-          <CommandGroup heading="Settings">
-            <CommandItem>
-              <User />
-              <span>Profile</span>
-              <CommandShortcut>⌘P</CommandShortcut>
-            </CommandItem>
-            <CommandItem>
-              <CreditCard />
-              <span>Billing</span>
-              <CommandShortcut>⌘B</CommandShortcut>
-            </CommandItem>
-            <CommandItem>
-              <Settings />
-              <span>Settings</span>
-              <CommandShortcut>⌘S</CommandShortcut>
-            </CommandItem>
+          <CommandGroup heading="Recent Chats">
+            {chats.length > 0 ? (
+              chats.map(chat => (
+                <CommandItem key={chat.id}>
+                  <div className="flex items-center gap-2 flex-1 justify-between">
+                    <span>{chat.title}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {chat.messages.length} messages • {formatChatTime(chat.createdAt)}
+                    </span>
+                  </div>
+                </CommandItem>
+              ))
+            ) : (
+              <CommandItem className="text-muted-foreground" disabled>
+                No recent chats
+              </CommandItem>
+            )}
           </CommandGroup>
         </CommandList>
       </CommandDialog>
