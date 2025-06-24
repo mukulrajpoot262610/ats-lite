@@ -1,10 +1,25 @@
+import { Candidate } from './candidate.types'
+import { FilterPlan, RankingPlan } from './mcp.types'
+
+export interface ThinkingData {
+  phase: string
+  plan: { filter?: FilterPlan; rank?: RankingPlan } | null
+  filtered: Candidate[]
+  ranked: Candidate[]
+  reply: string
+}
+
 export interface ChatMessage {
   id: string
   text: string
   timestamp: Date
   sender: 'user' | 'assistant' | 'thinking' | 'system'
   model?: string
-  data?: Record<string, unknown>
+  data?: Record<string, unknown> & {
+    thinkingData?: ThinkingData
+    candidates?: Candidate[]
+    type?: string
+  }
   isComplete?: boolean // For thinking messages
 }
 
@@ -43,4 +58,5 @@ export interface ChatStore {
   deleteChat: (chatId: string) => void
   addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'> & { id?: string }) => void
   updateChatTitle: (chatId: string, title: string) => void
+  updateMessage: (messageId: string, updates: Partial<ChatMessage>) => void
 }

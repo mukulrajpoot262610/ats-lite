@@ -133,4 +133,33 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       chats: state.chats.map(chat => (chat.id === chatId ? { ...chat, title, updatedAt: new Date() } : chat)),
     }))
   },
+
+  updateMessage: (messageId: string, updates: Partial<ChatMessage>) => {
+    const currentChatId = get().currentChatId
+    if (!currentChatId) {
+      console.error('No current chat ID when trying to update message')
+      return
+    }
+
+    set(state => {
+      const updatedChats = state.chats.map(chat => {
+        if (chat.id === currentChatId) {
+          const updatedMessages = chat.messages.map(msg => (msg.id === messageId ? { ...msg, ...updates } : msg))
+          return {
+            ...chat,
+            messages: updatedMessages,
+            updatedAt: new Date(),
+          }
+        }
+        return chat
+      })
+
+      // Update current messages if this is the active chat
+      const currentChat = updatedChats.find(chat => chat.id === currentChatId)
+      return {
+        chats: updatedChats,
+        messages: currentChat?.messages || state.messages,
+      }
+    })
+  },
 }))

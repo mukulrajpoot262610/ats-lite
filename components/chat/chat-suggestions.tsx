@@ -3,16 +3,16 @@
 import React, { useEffect, useState } from 'react'
 import FadeContent from '@/components/animations/fade-content'
 import { SUGGESTIONS_CONFIG } from '@/constants/app-config'
-import { MCPService, mcpService } from '@/lib/mcp-service'
+import { MCPService } from '@/lib/mcp-service'
 import { useMCPStore } from '@/store/useMcpStore'
 import { useChatStore } from '@/store/useChatStore'
 import { loadCandidates } from '@/lib/csv-service'
 import { generateUniqueId } from '@/lib/utils'
 
 export default function ChatSuggestions() {
-  const { message, setMessage, currentChatId, createNewChat, addMessage, messages, selectedModel } = useChatStore()
+  const { setMessage, currentChatId, createNewChat, addMessage, messages, selectedModel, updateMessage } =
+    useChatStore()
   const { setPhase, setPlan, setFiltered, setRanked, setReply } = useMCPStore()
-  const [thinkingMessageId, setThinkingMessageId] = useState<string | null>(null)
   const [mcpService, setMcpService] = useState<MCPService | null>(null)
 
   useEffect(() => {
@@ -46,7 +46,6 @@ export default function ChatSuggestions() {
 
     // Add thinking message
     const thinkingId = generateUniqueId('thinking')
-    setThinkingMessageId(thinkingId)
     addMessage({
       id: thinkingId,
       text: '',
@@ -82,32 +81,134 @@ export default function ChatSuggestions() {
           case 'think':
             setPhase('thinking')
             setPlan(step.data)
+            // Update thinking message with current state
+            if (thinkingId) {
+              const { filtered, ranked, reply } = useMCPStore.getState()
+              updateMessage(thinkingId, {
+                text: '',
+                sender: 'thinking' as const,
+                isComplete: false,
+                data: {
+                  thinkingData: {
+                    phase: 'thinking',
+                    plan: step.data,
+                    filtered,
+                    ranked,
+                    reply,
+                  },
+                },
+              })
+            }
             break
           case 'filter':
             setPhase('filtering')
             setFiltered(step.data)
+            // Update thinking message with current state
+            if (thinkingId) {
+              const { plan, ranked, reply } = useMCPStore.getState()
+              updateMessage(thinkingId, {
+                text: '',
+                sender: 'thinking' as const,
+                isComplete: false,
+                data: {
+                  thinkingData: {
+                    phase: 'filtering',
+                    plan,
+                    filtered: step.data,
+                    ranked,
+                    reply,
+                  },
+                },
+              })
+            }
             // Check if no candidates found and handle early exit
             if (step.data.length === 0) {
               setPhase('idle')
+              // Mark thinking as complete with final data
+              if (thinkingId) {
+                const { plan, reply } = useMCPStore.getState()
+                updateMessage(thinkingId, {
+                  text: '',
+                  sender: 'thinking' as const,
+                  isComplete: true,
+                  data: {
+                    thinkingData: {
+                      phase: 'idle',
+                      plan,
+                      filtered: step.data,
+                      ranked: [],
+                      reply,
+                    },
+                  },
+                })
+              }
               return
             }
             break
           case 'rank':
             setPhase('ranking')
             setRanked(step.data)
+            // Update thinking message with current state
+            if (thinkingId) {
+              const { plan, filtered, reply } = useMCPStore.getState()
+              updateMessage(thinkingId, {
+                text: '',
+                sender: 'thinking' as const,
+                isComplete: false,
+                data: {
+                  thinkingData: {
+                    phase: 'ranking',
+                    plan,
+                    filtered,
+                    ranked: step.data,
+                    reply,
+                  },
+                },
+              })
+            }
             break
           case 'speak':
             setPhase('speaking')
             setReply(step.data)
+            // Update thinking message with current state
+            if (thinkingId) {
+              const { plan, filtered, ranked } = useMCPStore.getState()
+              updateMessage(thinkingId, {
+                text: '',
+                sender: 'thinking' as const,
+                isComplete: false,
+                data: {
+                  thinkingData: {
+                    phase: 'speaking',
+                    plan,
+                    filtered,
+                    ranked,
+                    reply: step.data,
+                  },
+                },
+              })
+            }
             break
         }
       })
 
-      // Mark thinking as complete
-      if (thinkingMessageId) {
-        // Update the thinking message to completed
-        // Note: We'd need to add an update message function to the store for this
-        // For now, we'll just set the phase to idle
+      // Mark thinking as complete with final state
+      if (thinkingId) {
+        const { plan, filtered, ranked, reply } = useMCPStore.getState()
+        updateMessage(thinkingId, {
+          text: '',
+          sender: 'thinking' as const,
+          isComplete: true,
+          data: {
+            thinkingData: {
+              phase: 'idle',
+              plan,
+              filtered,
+              ranked,
+              reply,
+            },
+          },
+        })
       }
       setPhase('idle')
 
@@ -139,8 +240,6 @@ export default function ChatSuggestions() {
         sender: 'assistant',
         model: selectedModel.name,
       })
-    } finally {
-      setThinkingMessageId(null)
     }
   }
 

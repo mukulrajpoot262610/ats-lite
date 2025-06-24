@@ -24,8 +24,24 @@ interface MessageItemProps {
 export default function MessageItem({ message, onCandidateClick }: MessageItemProps) {
   const { phase, plan, filtered, ranked, reply } = useMCPStore()
 
-  const steps = createTimelineSteps(phase, plan || undefined, filtered, ranked, reply)
-  const isComplete = message.isComplete || phase === 'idle'
+  // Use stored thinking data from the message or fall back to global store for active thinking messages
+  const messageThinkingData = message.data?.thinkingData
+  const useStoredData = message.isComplete || message.sender !== 'thinking'
+
+  const thinkingPhase = useStoredData ? messageThinkingData?.phase || 'idle' : phase
+  const thinkingPlan = useStoredData ? messageThinkingData?.plan : plan
+  const thinkingFiltered = useStoredData ? messageThinkingData?.filtered : filtered
+  const thinkingRanked = useStoredData ? messageThinkingData?.ranked : ranked
+  const thinkingReply = useStoredData ? messageThinkingData?.reply : reply
+
+  const steps = createTimelineSteps(
+    thinkingPhase,
+    thinkingPlan || undefined,
+    thinkingFiltered,
+    thinkingRanked,
+    thinkingReply,
+  )
+  const isComplete = message.isComplete || thinkingPhase === 'idle'
   const candidates = message.data?.candidates as Candidate[]
 
   return (
